@@ -1,8 +1,8 @@
 # CI/CD van de Release-omroeper.
 # Job test: lint, unit-tests en UI-tests (3 viewports) bij een pull request naar test of main, en bij een push naar test of main.
 # Job deploy: na een geslaagde test zet hij public/ via SFTP op STRATO:
-#   push naar test → map app1-test (http://app1-test.caitlinveenendaal.nl/)
-#   push naar main → map app1      (http://app1.caitlinveenendaal.nl/), direct, zonder goedkeuringsstap.
+#   push naar test → map App1-test (http://app1-test.caitlinveenendaal.nl/)
+#   push naar main → map App1-Prod (http://app1.caitlinveenendaal.nl/), direct, zonder goedkeuringsstap.
 #   Er wordt niets gewist op de server; alleen de bestanden van de app worden overschreven.
 # Job smoke: na de deploy tegen dezelfde omgeving, of handmatig met Run workflow (eigen URL).
 # Secrets (repository secrets; environment-secrets werken niet op het gratis plan voor een privérepo):

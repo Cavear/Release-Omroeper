@@ -16,11 +16,11 @@ Kies *Concept importeren* en selecteer `journaal-concept.json`. De app controlee
 
 - **Klopt het**, dan zie je per bericht een kaart en de melding *n berichten ingeladen*.
 - **Klopt het niet**, dan zie je *Dit bestand is niet ingeladen* met per fout het bericht en het veld, bijvoorbeeld *Bericht 3, veld bronUrl: …*. Er wordt niets geladen en je huidige werk blijft zoals het was. Pas het bestand aan en kies opnieuw *Concept importeren*.
-- Heb je al werk, dan vraagt de app eerst of het nieuwe concept dat mag vervangen.
+- Staan er al berichten in de app, dan vraagt de app eerst of het nieuwe concept die mag vervangen.
 
 ![Vijf ingeladen berichten als kaarten](../testbewijs/stap-5.3/02-geimporteerd-desktop.jpg)
 
-![De foutmelding na een ongeldig bestand: welk bericht en veld, en wat je moet doen](../testbewijs/stap-3.4/foutmelding-1440.png)
+![De foutmelding na een ongeldig bestand: welk bericht en veld fout is, en wat je moet doen](afbeeldingen/foutmelding.jpg)
 
 ## 3. De berichten nakijken
 
@@ -33,10 +33,9 @@ Loop elk bericht na tegen de bron (*Bron openen* opent de PR in een nieuw tabbla
 | *Bewerken* | Pas kop en uitleg aan; *Opslaan* of *Annuleren* (Esc). Een lege kop of uitleg kan niet |
 | *Bron openen* | Bekijk de pull request op GitHub |
 
-Een uitgesloten bericht kun je niet direct goedkeuren: kies eerst *Weer opnemen*.
+Een uitgesloten bericht kun je niet direct goedkeuren: kies eerst *Weer opnemen*. Het ⓘ-icoon naast een statuslabel geeft een korte uitleg; *Help* (of de toets `?`) toont alle uitleg op één plek.
 
 ![Een kaart in de bewerkstand, met de velden Kop en Uitleg en de knoppen Opslaan en Annuleren](../testbewijs/stap-5.3/03-bewerken-desktop.jpg)
- Het ⓘ-icoon naast een statuslabel geeft een korte uitleg; *Help* (of de toets `?`) toont alle uitleg op één plek.
 
 Onderaan staat de teller, bijvoorbeeld *2 van 5 goedgekeurd*. Na elke actie verschijnt kort een melding.
 
@@ -76,7 +75,7 @@ Kies *Start uitzending* (kan pas als er minstens één bericht is goedgekeurd). 
 |---|---|
 | ![Een bericht in de uitzending](../testbewijs/stap-5.3/07-uitzending-bericht-1-desktop.jpg) | ![Het eindscherm met het totaaloverzicht en Kopieer overzicht](../testbewijs/stap-5.3/09-uitzending-eindscherm-desktop.jpg) |
 
-*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; lukt dat niet (bijvoorbeeld zonder HTTPS), dan selecteert de app de tekst zodat je hem zelf kopieert.
+*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; zonder HTTPS gebruikt de app een oudere kopieermethode, en lukt ook dat niet, dan selecteert de app de tekst zodat je hem zelf kopieert.
 
 ## 5. Het journaal exporteren
 
