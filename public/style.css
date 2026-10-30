@@ -328,6 +328,16 @@ button, input, textarea { font: inherit; color: inherit; }
 .balk__volgende { flex: none; min-height: 48px; border: 0; border-left: 2px solid var(--sepia); border-radius: 0;
   background: #141210; color: #f2ead8; padding: 0 clamp(14px, 2.5vw, 28px); font-size: clamp(15px, 1.7vw, 18px); }
 .balk__volgende:hover { background: #2a2420; color: #f2ead8; }
+/* Pauzeren/Afspelen: op een telefoon alleen het icoon (de tekst blijft de toegankelijke naam), vanaf 768 px met tekst. */
+.balk__pauze { padding: 0 var(--space-3); }
+.balk__knoptekst {
+  position: absolute; width: 1px; height: 1px; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .balk__pauze { padding: 0 clamp(14px, 2.5vw, 28px); }
+  .balk__knoptekst { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; }
+}
 
 .eindscherm { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: clamp(12px, 3vh, 24px); padding: clamp(16px, 4vh, 48px) clamp(16px, 5vw, 64px); overflow-y: auto; }
