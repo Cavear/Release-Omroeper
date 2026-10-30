@@ -24,6 +24,10 @@ const PLANNER_TIK = 25;
 /** Fade-in en fade-out in seconden. */
 const FADE = 0.6;
 
+/** Zolang de omroeper praat, zakt de muziek naar dit deel van het volume; de overgang duurt DEMP_FADE seconden. */
+const GEDEMPT = 0.3;
+const DEMP_FADE = 0.35;
+
 /**
  * Akkoorden per maat: grondtoon en kwint voor de tuba, en de naslag (drie tonen) voor de oem-pa.
  * Tonen zijn MIDI-nummers (60 = C4).
@@ -65,9 +69,11 @@ export const PARTITUUR = [
 /**
  * De toestand van de speler. `ctx` blijft bestaan na de eerste start; `aan` is de keuze van de gebruiker (dempknop).
  * @type {{ ctx: AudioContext | null, uit: GainNode | null, ruis: AudioBuffer | null, kraak: AudioBufferSourceNode | null,
- *   klok: number | null, maat: number, volgendeMaat: number, speelt: boolean, aan: boolean }}
+ *   klok: number | null, maat: number, volgendeMaat: number, speelt: boolean, aan: boolean, gedempt: boolean }}
  */
-const speler = { ctx: null, uit: null, ruis: null, kraak: null, klok: null, maat: 0, volgendeMaat: 0, speelt: false, aan: true };
+const speler = {
+  ctx: null, uit: null, ruis: null, kraak: null, klok: null, maat: 0, volgendeMaat: 0, speelt: false, aan: true, gedempt: false,
+};
 
 /**
  * Zet een MIDI-toon om in een frequentie.
@@ -247,12 +253,31 @@ function planner() {
 /**
  * Zet het volume met een korte overgang.
  * @param {number} doel 0 t/m 1
+ * @param {number} [duur] overgang in seconden
  */
-function fade(doel) {
+function fade(doel, duur = FADE) {
   const { ctx, uit } = speler;
   uit.gain.cancelScheduledValues(ctx.currentTime);
   uit.gain.setValueAtTime(uit.gain.value, ctx.currentTime);
-  uit.gain.linearRampToValueAtTime(doel, ctx.currentTime + FADE);
+  uit.gain.linearRampToValueAtTime(doel, ctx.currentTime + duur);
+}
+
+/**
+ * Het volume waarop de muziek hoort te klinken: vol, of zachter als de omroeper praat.
+ * @returns {number}
+ */
+function volume() {
+  return speler.gedempt ? VOLUME * GEDEMPT : VOLUME;
+}
+
+/**
+ * Zet de muziek zachter zolang de omroeper praat, en daarna weer op volle sterkte.
+ * @param {boolean} gedempt
+ */
+export function dempMuziek(gedempt) {
+  if (speler.gedempt === gedempt) return;
+  speler.gedempt = gedempt;
+  if (speler.ctx && speler.speelt && speler.aan) fade(volume(), DEMP_FADE);
 }
 
 /**
@@ -277,7 +302,7 @@ function begin() {
     speler.klok = setInterval(planner, PLANNER_TIK);
     planner();
   }
-  fade(VOLUME);
+  fade(volume());
 }
 
 /** Fade uit en zet daarna de planner, het gekraak en de AudioContext stil. */
@@ -298,6 +323,7 @@ function eindig() {
 /** Stopt de muziek met een fade-out (Uitzending sluiten). */
 export function stopMuziek() {
   speler.speelt = false;
+  speler.gedempt = false;
   eindig();
 }
 

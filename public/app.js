@@ -6,15 +6,17 @@
  * Stap 3.3: teller met Start uitzending; de uitzending met nieuwsframes, Volgende, en het eindscherm.
  * Stap 3.5: aftelleader 3-2-1, titelkaart en de effectlagen (korrel, vignet, flikkering, krassen) in index.html.
  * Stap 3.8: Help-paneel (knop Help en sneltoets ?) en een uitleg-icoon bij elk statuslabel.
- * Achtergrondmuziek in de uitzending (muziek.js), met de knop Muziek uit/aan en sneltoets M.
+ * De uitzending als film: hij loopt vanzelf door, een omroeper leest elk scherm voor (voorlezer.js) boven de muziek uit
+ * (muziek.js). Knoppen Pauzeren/Afspelen (P) en Geluid uit/aan (M).
  * @module app
  */
 import {
   valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, selecteerUitzending, maakTotaaloverzicht, PUBLICATIESTATUS,
 } from './logic.js';
-import { kanMuziek, startMuziek, stopMuziek, zetMuziek, muziekStaatAan } from './muziek.js';
+import { kanMuziek, startMuziek, stopMuziek, zetMuziek, muziekStaatAan, dempMuziek } from './muziek.js';
+import { kanVoorlezen, spreek, stopVoorlezen, leesTijd } from './voorlezer.js';
 import {
-  algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help,
+  algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help, voorlezen,
   github as githubTeksten,
 } from './teksten.js';
 import { GitHubFout, haalGitHubConcept } from './github.js';
@@ -71,6 +73,16 @@ const el = {
  */
 const uz = { berichten: [], stap: LEADER, teller: 3, klok: null };
 
+/** Stilte na het voorlezen van een scherm, voordat de film doorgaat (ms). */
+const PAUZE_NA_SCENE = 1500;
+
+/**
+ * De regie van de film. `speelt` is onwaar na Pauzeren; `beurt` telt op bij elk nieuw scherm, zodat een oude
+ * voorleesbeurt of timer niets meer doet; `klok` is de timer naar het volgende scherm.
+ * @type {{ speelt: boolean, beurt: number, klok: number | null }}
+ */
+const regie = { speelt: true, beurt: 0, klok: null };
+
 /** Inline SVG-iconen (stroke 1.75, currentColor), altijd naast tekst en verborgen voor schermlezers. */
 const ICONEN = {
   importeren: '<path d="M12 15V3M7 8l5-5 5 5M4 15v5h16v-5"/>',
@@ -85,8 +97,9 @@ const ICONEN = {
   start: '<path d="M7 5l12 7-12 7z"/>',
   volgende: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   sluiten: '<path d="M6 6l12 12M18 6L6 18"/>',
-  muziekAan: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
-  muziekUit: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/>',
+  geluidAan: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  geluidUit: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/>',
+  pauzeren: '<path d="M8 5v14M16 5v14"/>',
   kopieer: '<rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17v.01"/>',
 };
@@ -617,38 +630,47 @@ function toonTeller() {
   el.startknop.disabled = goed === 0;
 }
 
-/** Bouwt de vaste delen van de uitzending: de muziekknop, de sluitknop en de lopende balk met Volgende (eenmalig). */
+/** Bouwt de vaste delen van de uitzending: de geluidsknop, de sluitknop en de lopende balk met Pauzeren en Volgende (eenmalig). */
 function bouwUitzending() {
   const sluit = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'Escape' },
     icoon('sluiten', true), knoppen.uitzendingSluiten);
   sluit.addEventListener('click', sluitUitzending);
   const bediening = maak('div', { class: 'uitzending__bediening' }, sluit);
-  // Zonder Web Audio API geen muziek, en dan ook geen knop die niets doet.
-  if (kanMuziek()) {
-    el.muziekknop = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'M' });
-    el.muziekknop.addEventListener('click', wisselMuziek);
-    toonMuziekknop();
-    bediening.prepend(el.muziekknop);
+  // Zonder Web Audio API en zonder spraak is er geen geluid, en dan ook geen knop die niets doet.
+  if (kanMuziek() || 'speechSynthesis' in window) {
+    el.geluidknop = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'M' });
+    el.geluidknop.addEventListener('click', wisselGeluid);
+    toonGeluidknop();
+    bediening.prepend(el.geluidknop);
   }
   el.uitzending.prepend(bediening);
 
   el.balkLoop = maak('div', { class: 'balk__loop', 'aria-hidden': 'true' });
+  el.pauzeknop = maak('button', { type: 'button', class: 'knop balk__volgende balk__pauze', 'aria-keyshortcuts': 'P' });
+  el.pauzeknop.addEventListener('click', wisselPauze);
   el.volgendeknop = maak('button', { type: 'button', class: 'knop balk__volgende', 'aria-keyshortcuts': 'ArrowRight' },
     knoppen.volgende, icoon('volgende'));
   el.volgendeknop.addEventListener('click', volgende);
   el.balk.append(
     maak('div', { class: 'balk__tag', 'aria-hidden': 'true' }, uitzending.balkTag),
     maak('div', { class: 'balk__venster' }, el.balkLoop),
+    el.pauzeknop,
     el.volgendeknop);
 
   document.addEventListener('keydown', (event) => {
     if (el.uitzending.hidden) return;
+    const zonderModifier = !event.altKey && !event.ctrlKey && !event.metaKey;
+    const toets = event.key.toLowerCase();
     if (event.key === 'Escape') { event.preventDefault(); sluitUitzending(); }
-    else if ((event.key === 'm' || event.key === 'M') && el.muziekknop && !event.altKey && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault();
-      wisselMuziek();
-    } else if (event.key === 'ArrowRight' && !event.altKey && !event.ctrlKey && !event.metaKey
+    else if (toets === 'm' && el.geluidknop && zonderModifier) { event.preventDefault(); wisselGeluid(); }
+    else if (toets === 'p' && zonderModifier) { event.preventDefault(); wisselPauze(); }
+    else if (event.key === 'ArrowRight' && zonderModifier
       && uz.stap < uz.berichten.length) { event.preventDefault(); volgende(); }
+  });
+
+  // Wie tijdens de film een bronlink opent of van tabblad wisselt, mist niets: de film pauzeert.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && !el.uitzending.hidden && regie.speelt) wisselPauze();
   });
 
   // Vegen naar links op een touchscreen is Volgende.
@@ -686,29 +708,115 @@ function startUitzending() {
   el.redactie.inert = true;
   el.uitzending.hidden = false;
   el.uitzending.requestFullscreen?.().catch(() => {});
+  // Elke uitzending begint spelend.
+  regie.speelt = true;
+  toonPauzeknop();
   // Start uitzending is een klik, dus hier mag de browser geluid afspelen.
   startMuziek();
   toonUitzending();
 }
 
-/** Zet de muziek uit of aan en meldt dat; de keuze geldt ook voor de volgende uitzending. */
-function wisselMuziek() {
+/** Zet muziek en omroeper uit of aan en meldt dat; de keuze geldt ook voor de volgende uitzending. */
+function wisselGeluid() {
   const aan = !muziekStaatAan();
   zetMuziek(aan);
-  toonMuziekknop();
-  el.melding.textContent = aan ? meldingen.muziekAan : meldingen.muziekUit;
+  toonGeluidknop();
+  el.melding.textContent = aan ? meldingen.geluidAan : meldingen.geluidUit;
+  // Het huidige scherm begint opnieuw: met stem als het geluid aan gaat, op leestijd als het uit gaat.
+  if (regie.speelt) speelScene();
 }
 
-/** Zet tekst en icoon van de muziekknop: Muziek uit als hij speelt, Muziek aan als hij uit staat. */
-function toonMuziekknop() {
+/** Zet tekst en icoon van de geluidsknop: Geluid uit als het aan staat, Geluid aan als het uit staat. */
+function toonGeluidknop() {
   const aan = muziekStaatAan();
-  el.muziekknop.replaceChildren(icoon(aan ? 'muziekAan' : 'muziekUit', true), aan ? knoppen.muziekUit : knoppen.muziekAan);
+  el.geluidknop.replaceChildren(icoon(aan ? 'geluidAan' : 'geluidUit', true), aan ? knoppen.geluidUit : knoppen.geluidAan);
+}
+
+/** Zet de film stil of laat hem verder lopen; verder lopen begint het huidige scherm opnieuw. */
+function wisselPauze() {
+  regie.speelt = !regie.speelt;
+  toonPauzeknop();
+  el.melding.textContent = regie.speelt ? meldingen.afspelen : meldingen.gepauzeerd;
+  if (regie.speelt) speelScene();
+  else stopRegie();
+}
+
+/** Zet tekst en icoon van de pauzeknop. */
+function toonPauzeknop() {
+  el.pauzeknop.replaceChildren(icoon(regie.speelt ? 'pauzeren' : 'start'),
+    maak('span', { class: 'balk__knoptekst' }, regie.speelt ? knoppen.pauzeren : knoppen.afspelen));
+}
+
+/** Stopt de omroeper en de timer naar het volgende scherm, en zet de muziek weer op volle sterkte. */
+function stopRegie() {
+  regie.beurt += 1;
+  clearTimeout(regie.klok);
+  regie.klok = null;
+  stopVoorlezen();
+  zetOmroeper(false);
+}
+
+/**
+ * Meldt of de omroeper praat: de muziek gaat dan zachter, en `data-omroeper` op de uitzending laat het zien.
+ * @param {boolean} praat
+ */
+function zetOmroeper(praat) {
+  dempMuziek(praat);
+  el.uitzending.dataset.omroeper = praat ? 'praat' : 'stil';
+}
+
+/**
+ * Wacht een tijd binnen de huidige beurt van de regie; stopRegie breekt het wachten af.
+ * @param {number} ms
+ * @returns {Promise<void>} lost alleen op als de beurt intussen niet voorbij is
+ */
+function wachtInBeurt(ms) {
+  return new Promise((klaar) => { regie.klok = setTimeout(klaar, ms); });
+}
+
+/**
+ * Wat de omroeper bij het huidige scherm voorleest.
+ * @returns {string[]}
+ */
+function voorleestekst() {
+  const n = uz.berichten.length;
+  if (uz.stap === TITELKAART) return voorlezen.titel(datumLang.format(new Date(staat.concept.periode.van)), n);
+  if (uz.stap >= n) return voorlezen.einde;
+  const b = uz.berichten[uz.stap];
+  return [b.kop, b.uitleg];
+}
+
+/**
+ * Speelt het huidige scherm af als een scène uit de film: de omroeper leest voor (of, zonder stem of geluid,
+ * wacht de film de leestijd af), daarna een korte stilte en dan het volgende scherm. Na het eindscherm stopt de muziek.
+ */
+async function speelScene() {
+  stopRegie();
+  if (!regie.speelt || uz.stap === LEADER || el.uitzending.hidden) return;
+  const beurt = regie.beurt;
+  const zinnen = voorleestekst();
+  const eind = uz.stap >= uz.berichten.length;
+
+  if (muziekStaatAan() && kanVoorlezen()) {
+    const klaar = await spreek(zinnen, { bijStart: () => zetOmroeper(true) });
+    if (!klaar || beurt !== regie.beurt) return;
+    zetOmroeper(false);
+  } else {
+    await wachtInBeurt(leesTijd(zinnen.join(' ')));
+    if (beurt !== regie.beurt) return;
+  }
+
+  // Na het slotwoord is de film af; het eindscherm blijft staan om te kopiëren.
+  if (eind) { stopMuziek(); return; }
+  await wachtInBeurt(PAUZE_NA_SCENE);
+  if (beurt === regie.beurt) volgende();
 }
 
 /** Sluit de uitzending en zet de focus terug op Start uitzending. */
 function sluitUitzending() {
   if (el.uitzending.hidden) return;
   stopLeader();
+  stopRegie();
   stopMuziek();
   // Een melding uit de uitzending hoort niet meer in de redactie.
   el.melding.textContent = '';
@@ -876,6 +984,7 @@ function toonUitzending() {
     el.melding.textContent = '';
     const kop = el.frame.querySelector('h1').textContent;
     setTimeout(() => meld(kop), 50);
+    speelScene();
   }
 }
 
