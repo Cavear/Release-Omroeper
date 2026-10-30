@@ -3,13 +3,16 @@
  * Zonder DOM, zodat alles met Vitest te testen is.
  * @module logic
  */
-import { fouten as meldingen } from './teksten.js';
+import { fouten as meldingen, algemeen } from './teksten.js';
 
 /** De vier geldige statussen van een bericht. */
 export const STATUSSEN = ['concept', 'meer-info-nodig', 'goedgekeurd', 'uitgesloten'];
 
 /** Maximaal aantal berichten in één journaal. */
 export const MAX_BERICHTEN = 5;
+
+/** Publicatiestatus van elk bericht zolang een mens het niet heeft nagelopen. */
+export const PUBLICATIESTATUS = 'niet gecontroleerd';
 
 /** Verplichte tekstvelden per bericht (naast prNummer). */
 const VERPLICHTE_TEKSTVELDEN = ['bronUrl', 'origineleTitel', 'kop', 'uitleg', 'status'];
@@ -315,4 +318,55 @@ export function wijzigStatus(berichten, prNummer, nieuweStatus) {
     throw new RangeError(`Bericht #${prNummer} kan niet van ${huidig} naar ${nieuweStatus}.`);
   }
   return vervang(berichten, index, { status: nieuweStatus });
+}
+
+/** Velden van het bestand, in de volgorde van docs/contract.md. */
+const BESTANDSVELDEN = ['repository', 'periode', 'gegenereerdOp', 'berichten'];
+
+/** Velden van een bericht, in de volgorde van docs/contract.md. */
+const BERICHTVELDEN = ['prNummer', 'bronUrl', 'origineleTitel', 'gemergdOp', 'kop', 'uitleg', 'voorWie', 'status', 'publicatiestatus'];
+
+/**
+ * Neemt alleen de genoemde velden over, in die volgorde; ontbrekende velden worden overgeslagen.
+ * @param {Record<string, unknown>} bron
+ * @param {string[]} velden
+ * @returns {Record<string, unknown>}
+ */
+function kiesVelden(bron, velden) {
+  return Object.fromEntries(velden.filter((v) => bron[v] !== undefined).map((v) => [v, bron[v]]));
+}
+
+/**
+ * Maakt het totaaloverzicht om te kopiëren: per goedgekeurd bericht de kop, de uitleg en de link,
+ * genummerd in de volgorde van de uitzending, met de publicatiestatus als laatste regel.
+ * Een regeleinde in een kop of uitleg blijft staan; de inspringing van de volgende regel klopt dan niet meer.
+ * @param {Bericht[]} berichten alle berichten; alleen de goedgekeurde komen in het overzicht
+ * @returns {string} platte tekst, of een lege tekst als er niets is goedgekeurd
+ */
+export function maakTotaaloverzicht(berichten) {
+  const goedgekeurd = selecteerUitzending(berichten);
+  if (goedgekeurd.length === 0) return '';
+  const blokken = goedgekeurd.map((b, i) => `${i + 1}. ${b.kop}\n   ${b.uitleg}\n   ${b.bronUrl}`);
+  return `${blokken.join('\n\n')}\n\n${algemeen.publicatiestatus}\n`;
+}
+
+/**
+ * Maakt het nagekeken journaal als JSON, in het formaat van docs/contract.md, met alle berichten
+ * (ook concept en uitgesloten) en hun bewerkte kop, uitleg en status. Het resultaat slaagt weer voor
+ * valideerConcept, zodat je het later opnieuw kunt importeren en verder kunt werken.
+ * Velden buiten het contract worden weggelaten; de publicatiestatus blijft "niet gecontroleerd".
+ * @param {{ repository: string, periode: { van: string, tot: string }, gegenereerdOp?: string }} concept het ingeladen concept
+ * @param {Bericht[]} berichten de berichten zoals ze nu op de redactietafel staan
+ * @returns {string} ingesprongen JSON met een regeleinde aan het eind
+ */
+export function exporteerJournaal(concept, berichten) {
+  const journaal = kiesVelden(
+    {
+      ...concept,
+      periode: { van: concept.periode.van, tot: concept.periode.tot },
+      berichten: berichten.map((b) => kiesVelden({ ...b, publicatiestatus: PUBLICATIESTATUS }, BERICHTVELDEN)),
+    },
+    BESTANDSVELDEN
+  );
+  return `${JSON.stringify(journaal, null, 2)}\n`;
 }
