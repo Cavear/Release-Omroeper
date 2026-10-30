@@ -65,7 +65,12 @@ export const kaart = {
   voor: 'Voor:',
   voorOnbekend: 'nog onbekend',
   kopLabel: 'Kop',
-  uitlegLabel: 'Uitleg'
+  uitlegLabel: 'Uitleg',
+  leegVeld: 'Kop en uitleg mogen niet leeg zijn.',
+  eerstOpnemen: 'Dit bericht is uitgesloten. Kies eerst Weer opnemen om het goed te keuren.',
+  bestandsnaamExport: 'journaal-nagekeken.json',
+  /** @param {number} nr @returns {string} */
+  wijzigingWeggooien: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen. Wil je die weggooien?`
 };
 
 /** Teller en startknop. */
