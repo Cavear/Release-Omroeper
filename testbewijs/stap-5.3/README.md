@@ -1,6 +1,6 @@
 # Stap 5.3 – Testbewijs: de hele flow op de test-URL
 
-Gemaakt op 30-10-2026 tegen `http://app1-test.caitlinveenendaal.nl/` (de versie die de CI daar heeft gedeployd), met Playwright op drie viewports: mobiel 390×844 (touch), tablet 768×1024 (touch) en desktop 1440×900. Met *reduced motion*, zodat flikkering en lopende balk de beelden niet laten verschillen.
+Gemaakt op 30-10-2026 tegen `http://app1-test.caitlinveenendaal.nl/` (de versie die de CI daar heeft gedeployd), met Playwright op drie viewports (script `maak-screenshots.mjs` in deze map; een script in plaats van de Playwright MCP, omdat het zo in één keer voor alle drie viewports gaat): mobiel 390×844 (touch), tablet 768×1024 (touch) en desktop 1440×900. Met *reduced motion*, zodat flikkering en lopende balk de beelden niet laten verschillen.
 
 Data: `testdata/geldig-5-berichten.json`.
 

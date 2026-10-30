@@ -31,6 +31,23 @@ function conceptMetAlleStatussen() {
   return concept;
 }
 
+/**
+ * Geeft de zichtbare knoppen, invoervelden en links zonder toegankelijke naam terug.
+ * checkVisibility() telt ook vaste elementen mee (tellerbalk, uitzendlaag), anders dan offsetParent.
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<string[]>}
+ */
+function naamloos(page) {
+  return page.evaluate(() => [...document.querySelectorAll('button, input:not([type=file]), textarea, a[href], [role=button]')]
+    .filter((e) => e.checkVisibility() && !e.closest('[inert]'))
+    .filter((e) => {
+      const verwezen = (e.getAttribute('aria-labelledby') ?? '').split(' ').map((id) => document.getElementById(id)?.textContent ?? '').join('');
+      const label = [...(e.labels ?? [])].map((l) => l.textContent).join('');
+      return !(e.getAttribute('aria-label') || verwezen.trim() || e.textContent.trim() || label.trim() || e.getAttribute('title'));
+    })
+    .map((e) => e.outerHTML.slice(0, 80)));
+}
+
 test.describe('de app legt zichzelf uit', () => {
   test('de lege staat toont de 3 stappen en de importknop', async ({ page }) => {
     await page.goto('./');
@@ -90,7 +107,7 @@ test.describe('de app legt zichzelf uit', () => {
 
   test('elke knop en elk invoerveld heeft een toegankelijke naam', async ({ page }) => {
     await importeer(page, alsBestand(conceptMetAlleStatussen()));
-    // De namen uit de tabel in CLAUDE.md, gezocht zoals een schermlezer of test ze vindt.
+    // De namen uit public/teksten.js (knoppen), gezocht zoals een schermlezer of test ze vindt.
     for (const naam of ['Concept importeren', 'Journaal exporteren', 'Help', 'Goedkeuren', 'Terug naar concept',
       'Uitsluiten', 'Weer opnemen', 'Bewerken', 'Start uitzending']) {
       await expect(page.getByRole('button', { name: naam, exact: true }).first(), naam).toBeVisible();
@@ -104,15 +121,26 @@ test.describe('de app legt zichzelf uit', () => {
     await expect(page.getByRole('button', { name: 'Opslaan' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Annuleren' })).toBeVisible();
 
-    // En geen enkele zichtbare knop of invoer zonder naam.
-    const naamloos = await page.evaluate(() => [...document.querySelectorAll('button, input:not([type=file]), textarea, a[href]')]
-      .filter((e) => e.offsetParent !== null)
-      .filter((e) => {
-        const label = e.labels?.[0]?.textContent ?? '';
-        return !(e.getAttribute('aria-label') || e.textContent.trim() || label.trim());
-      })
-      .map((e) => e.outerHTML.slice(0, 80)));
-    expect(naamloos).toEqual([]);
+    // En nergens een zichtbare knop, invoer of link zonder naam: in de redactie, de bewerkstand, Help en de uitzending.
+    expect(await naamloos(page), 'redactie met bewerkstand').toEqual([]);
+    await page.getByRole('button', { name: 'Annuleren' }).click();
+    await page.getByRole('button', { name: 'Help', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Sluiten', exact: true })).toBeVisible();
+    expect(await naamloos(page), 'Help-paneel').toEqual([]);
+    await page.keyboard.press('Escape');
+
+    await page.getByRole('button', { name: 'Start uitzending' }).click();
+    await expect(page.getByRole('button', { name: 'Aftellen overslaan' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Uitzending sluiten' })).toBeVisible();
+    expect(await naamloos(page), 'leader').toEqual([]);
+    await page.getByRole('button', { name: 'Aftellen overslaan' }).click();
+    await page.getByRole('button', { name: 'Volgende' }).click();
+    await expect(page.getByTestId('nieuwsframe')).toBeVisible();
+    expect(await naamloos(page), 'nieuwsframe').toEqual([]);
+    await page.getByRole('button', { name: 'Volgende' }).click();
+    await expect(page.getByRole('button', { name: 'Kopieer overzicht' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Terug naar de redactie' })).toBeVisible();
+    expect(await naamloos(page), 'eindscherm').toEqual([]);
   });
 
   test('een ongeldig bestand zegt welk bericht en veld fout is, en wat je moet doen', async ({ page }) => {
