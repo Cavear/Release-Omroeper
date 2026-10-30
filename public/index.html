@@ -31,12 +31,21 @@
                 <div id="werk" class="stapel" hidden>
                     <p class="publicatie" id="publicatie"></p>
                     <div class="raster" id="kaarten"></div>
+                    <div class="tellerbalk-ruimte"></div>
+                    <div class="tellerbalk" id="teller" data-testid="teller"></div>
                 </div>
             </main>
         </div>
 
         <input type="file" id="bestandskiezer" accept=".json,application/json" tabindex="-1" aria-hidden="true" hidden>
-        <p id="melding" class="melding" role="status" aria-live="polite"></p>
     </section>
+
+    <section id="uitzending" class="uitzending" data-thema="uitzending" data-testid="uitzending" hidden>
+        <div class="uitzending__frame" id="uitzending-frame"></div>
+        <div class="balk" id="balk"></div>
+    </section>
+
+    <!-- Buiten beide schermen, zodat meldingen ook tijdens de uitzending worden voorgelezen. -->
+    <p id="melding" class="melding" role="status" aria-live="polite"></p>
 </body>
 </html>
