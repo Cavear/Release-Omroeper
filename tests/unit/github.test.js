@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { valideerConcept } from '../../public/logic.js';
 import { GitHubFout, haalGitHubConcept } from '../../public/github.js';
+import * as teksten from '../../public/teksten.js';
 
 /** Maakt een eenvoudige JSON-response voor fetch-tests.
  * @param {unknown} data
@@ -48,7 +49,7 @@ describe('haalGitHubConcept', () => {
     expect(concept.berichten[0]).toMatchObject({
       prNummer: 12,
       bronUrl: 'https://github.com/eigenaar/webshop/pull/12',
-      kop: 'Zoeken in producten',
+      origineleTitel: 'Zoeken in producten',
       status: 'concept',
     });
     expect(concept.berichten[0]).not.toHaveProperty('voorWie');
@@ -224,5 +225,73 @@ describe('periode in Nederlandse tijd', () => {
       pr({ number: 9, merged_at: '2026-10-27T23:30:00Z' }),
     ]));
     expect(valideerConcept(concept).geldig).toBe(true);
+  });
+});
+
+describe('journaalkoppen', () => {
+  /** Haalt één PR op en geeft het bericht terug. */
+  const bericht = async (velden) => (await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([pr(velden)]))).concept.berichten[0];
+
+  it('zet een opener per soort wijziging voor het onderwerp uit de titel', async () => {
+    const gevallen = [
+      ['Fix: winkelmandje toont na de terugknop weer de juiste inhoud', /^(Euvel verholpen|De monteur was er al|Weer in het gareel): winkelmandje toont/],
+      ['Dependency-update: @playwright/test vastgezet op 1.64.1', /^(In de machinekamer|Bouten aangedraaid): @playwright\/test/],
+      ['Extra Playwright-tests voor mandje en bestellen', /^(Nieuws uit de proefkamer|Op de proefbank): Extra Playwright-tests/],
+      ['README met instructies voor starten', /^(Uit de leeszaal|Voor de leesgrage): README/],
+      ['Update button styles', /^(Een nieuw pakje|Opnieuw in de verf): Update button styles$/],
+      ['feat(checkout): add PayPal as payment option', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): add PayPal/],
+      ['Zoekveld op de productpagina', /^(Dames en heren|Uit de werkplaats|Bericht van het front): Zoekveld op de productpagina$/],
+    ];
+    for (const [title, verwacht] of gevallen) {
+      const b = await bericht({ title });
+      expect(b.kop).toMatch(verwacht);
+      expect(b.origineleTitel).toBe(title);
+      expect(b.status).toBe('concept');
+    }
+  });
+
+  it('kiest de opener vast per PR-nummer, zodat koppen variëren maar herhaalbaar zijn', async () => {
+    const a = await bericht({ number: 1, title: 'Fix het mandje' });
+    const b = await bericht({ number: 2, title: 'Fix het mandje' });
+    expect(a.kop).not.toBe(b.kop);
+    expect((await bericht({ number: 1, title: 'Fix het mandje' })).kop).toBe(a.kop);
+  });
+
+  it('verzint geen onderwerp bij een vage titel en zet die op meer-info-nodig', async () => {
+    for (const title of ['fix bug', 'WIP', 'Update', 'fix: bugs', 'Fixes #12', 'Fix typo', 'minor fixes', 'Closes #4']) {
+      const b = await bericht({ title });
+      expect(teksten.github.koppen.vaag).toContain(b.kop);
+      expect(b.status).toBe('meer-info-nodig');
+    }
+  });
+
+  it('maakt van een tweede dubbele punt een streepje en houdt hoofdletters van namen', async () => {
+    const b = await bericht({ title: "GitHub ophalen: gemergde PR's als concept" });
+    expect(b.kop).toMatch(/: GitHub ophalen – gemergde PR's als concept$/);
+  });
+
+  it('belooft geen herstel, onderhoud of opmaak die niet in de titel staat', async () => {
+    const gevallen = [
+      ['Revert "Add PayPal as payment option"', /^(Terug naar de vorige stand|Op de terugweg): /],
+      ['Add bug report template', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['PIN-betaling toevoegen', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Nieuwe versie van de productpagina', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Knop Bestellen toevoegen', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Bulk actions in het beheer', /^(Dames en heren|Uit de werkplaats|Bericht van het front): /],
+      ['Pin-code scherm', /^(Dames en heren|Uit de werkplaats|Bericht van het front): /],
+    ];
+    for (const [title, verwacht] of gevallen) expect((await bericht({ title })).kop).toMatch(verwacht);
+  });
+
+  it('laat een bekend voorvoegsel de soort bepalen en weghalen, maar een gewone dubbele punt staan', async () => {
+    expect((await bericht({ title: 'docs: fix typo in README' })).kop).toMatch(/^(Uit de leeszaal|Voor de leesgrage): fix typo in README$/);
+    expect((await bericht({ title: 'chore(deps): bump vite to 6' })).kop).toMatch(/^(In de machinekamer|Bouten aangedraaid): bump vite to 6$/);
+    expect((await bericht({ title: 'Winkelmandje: toont weer de juiste inhoud' })).kop).toMatch(/: Winkelmandje – toont weer de juiste inhoud$/);
+  });
+
+  it('blijft met opener binnen 90 tekens', async () => {
+    const b = await bericht({ title: `Fix ${'het winkelmandje '.repeat(8)}` });
+    expect(b.kop.length).toBeLessThanOrEqual(90);
+    expect(b.status).toBe('meer-info-nodig');
   });
 });

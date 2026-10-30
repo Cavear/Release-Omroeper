@@ -111,7 +111,7 @@ export const leeg = {
 /** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
 export const github = {
   kop: 'Gemergde PR’s ophalen',
-  intro: 'Haal maximaal twintig gemergde pull requests op uit een publieke repository. Zijn het er meer, dan krijg je de twintig meest recente. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
+  intro: 'Haal maximaal twintig gemergde pull requests op uit een publieke repository. Zijn het er meer, dan krijg je de twintig meest recente. Elke PR krijgt een journaalkop op basis van de titel en de beschrijving als uitleg, als ongekeurd concept; controleer en redigeer ze voordat je goedkeurt.',
   repositoryLabel: 'Repository (owner/repo)',
   repositoryVoorbeeld: 'Cavear/vibe_webshop',
   /** Staat ingevuld zolang er nog geen andere repository is gebruikt. */
@@ -124,6 +124,50 @@ export const github = {
   ontbrekendeBeschrijving: 'De pull request heeft geen beschrijving. Open de bron en vul een zakelijke uitleg in.',
   zieBron: '(Ingekort; zie de bron.)',
   bron: 'de opgehaalde pull requests',
+  /**
+   * Journaalkoppen voor opgehaalde PR's: een vaste opener per soort wijziging, gevolgd door het
+   * onderwerp uit de PR-titel. De grap zit alleen in de opener, nooit over personen, en belooft
+   * geen voordeel dat niet in de titel staat. Per soort meerdere openers, zodat niet elke kop gelijk begint.
+   */
+  koppen: {
+    /**
+     * Volgorde telt: de eerste soort waarvan een trefwoord in de titel staat, wint. Een bekend
+     * voorvoegsel (zoals 'docs:' of 'fix:') gaat altijd voor. Trefwoorden zijn bewust streng,
+     * zodat bijvoorbeeld 'bug report template' of 'PIN-betaling' geen verkeerde opener krijgt.
+     */
+    soorten: [
+      // Een revert draait iets terug: geen primeur en geen herstel.
+      { soort: 'revert', woorden: /^\s*revert\b|\bterugdraai\w*|\bteruggedraaid\b/i,
+        openers: ['Terug naar de vorige stand', 'Op de terugweg'] },
+      { soort: 'herstel', woorden: /\b(fix|fixes|fixed|bugfix|hotfix|herstel\w*|repar\w*|opgelost|verholpen|verhelp\w*|corrig\w*)\b/i,
+        openers: ['Euvel verholpen', 'De monteur was er al', 'Weer in het gareel'] },
+      { soort: 'nieuw', woorden: /\b(feat|feature|nieuw\w*|toevoeg\w*|toegevoegd|add|adds|added|introduce\w*)\b/i,
+        openers: ['Primeur in de werkplaats', 'Gloednieuw', 'Kersvers van de band'] },
+      // Vóór tests: 'Dependency-update: @playwright/test' is onderhoud, geen test.
+      { soort: 'onderhoud', woorden: /\b(deps|dependenc\w*|dependabot|bump\w*|upgrade\w*|vastgezet)\b/i,
+        openers: ['In de machinekamer', 'Bouten aangedraaid'] },
+      { soort: 'test', woorden: /\b(test|tests|testen|e2e|playwright|vitest)\b/i,
+        openers: ['Nieuws uit de proefkamer', 'Op de proefbank'] },
+      { soort: 'docs', woorden: /\b(docs?|readme|handleiding|documentatie)\b/i,
+        openers: ['Uit de leeszaal', 'Voor de leesgrage'] },
+      { soort: 'stijl', woorden: /\b(style|styles|styling|css|opmaak|lettertype)\b/i,
+        openers: ['Een nieuw pakje', 'Opnieuw in de verf'] },
+      { soort: 'ci', woorden: /\b(ci|workflow|pipeline|github actions)\b/i,
+        openers: ['Op de lopende band', 'De fabriekshal draait door'] },
+      { soort: 'opruim', woorden: /\b(refactor\w*|opruim\w*|opgeruimd|cleanup|clean-up)\b/i,
+        openers: ['De bezem erdoor', 'Opgeruimd staat netjes'] },
+    ],
+    /** Als geen soort past. */
+    algemeen: ['Dames en heren', 'Uit de werkplaats', 'Bericht van het front'],
+    /** @param {string} opener @param {string} onderwerp @returns {string} */
+    kop: (opener, onderwerp) => `${opener}: ${onderwerp}`,
+    /** Voor een titel die niets zegt (bijvoorbeeld alleen 'fix bug'): geen verzonnen onderwerp. */
+    vaag: [
+      'Er werd gesleuteld in de werkplaats, maar waaraan?',
+      'Geheimzinnig gesleutel in de werkplaats',
+      'Iets veranderd, maar wat? De redactie zoekt het uit',
+    ],
+  },
   foutkaart: {
     kop: 'De pull requests zijn niet ingeladen',
     oplossing: 'Controleer de repository en de periode en kies opnieuw GitHub ophalen.'
@@ -208,7 +252,7 @@ export const help = {
   statussenKop: 'DE VIER STATUSSEN',
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
-    { naam: 'GitHub ophalen', uitleg: 'haal maximaal twintig gemergde PR’s op uit een publieke repository; zijn het er meer, dan de twintig meest recente. De titel en beschrijving blijven ongekeurd tot je ze controleert.' },
+    { naam: 'GitHub ophalen', uitleg: 'haal maximaal twintig gemergde PR’s op uit een publieke repository; zijn het er meer, dan de twintig meest recente. Kop en uitleg blijven ongekeurd tot je ze controleert.' },
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
     { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
     { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
@@ -226,9 +270,9 @@ export const help = {
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
   conceptKop: 'HET CONCEPTBESTAND',
-  conceptTekst: 'Je kunt zelf een conceptbestand importeren of tot twintig gemergde PR’s (de meest recente) uit een publieke GitHub-repository ophalen. De directe koppeling neemt de PR-titel en de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
+  conceptTekst: 'Je kunt zelf een conceptbestand importeren of tot twintig gemergde PR’s (de meest recente) uit een publieke GitHub-repository ophalen. De directe koppeling maakt een journaalkop met een vaste opener bij de PR-titel, neemt de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving of met een vage titel krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
-  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen neemt de app de titel en de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
+  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen maakt de app een journaalkop van de titel en neemt de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
   handleiding: 'Naar de gebruikershandleiding',
   sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };
