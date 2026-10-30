@@ -11,7 +11,8 @@ Van een technische PR-titel naar een uitgezonden journaal. Generale repetitie ge
 | De vage PR in de oefenrepo | https://github.com/Cavear/vibe_webshop/pull/10 ("fix bug") |
 | De demo-PR met de kapotte filter | https://github.com/Cavear/Release-Omroeper/pull/26 (open, rood) |
 | Terugvaloptie concept | `journaal/2026-10-30-oefenrepo/journaal-concept.json` |
-| Terugvaloptie fix | lokaal de branch `demo/kapotte-filter` uitgecheckt |
+| De fix | een worktree met `demo/kapotte-filter`: `git worktree add <map> demo/kapotte-filter` (los van de hoofdmap) |
+| Volgorde | stap 1 → 2 → **5** (fix pushen) → 3 → 4 → terug naar 5 (*Merge*) → 6, vanwege de CI-tijd |
 
 ## De demo
 
@@ -48,13 +49,15 @@ Open PR #26: de filter van de uitzending laat ook concepten door.
 - **Mergen is geblokkeerd**: branch protection op `test` en `main` eist een groene check `test` (de knop *Merge* is grijs, status *BLOCKED*).
 - **Er komt geen deploy**: `deploy` en `smoke` staan op *skipped*.
 
-Push de fix op dezelfde branch:
+Push de fix op dezelfde branch, **in een eigen map** (een git-worktree), zodat werk in de hoofdmap niet in de weg zit:
 ```
-git switch demo/kapotte-filter
+cd <map van de demo-worktree>      # git worktree add <map> demo/kapotte-filter
 git revert --no-edit HEAD
 git push
 ```
 → groen → *Merge* → deploy naar test met smoketest.
+
+**Timing (gemeten in de repetitie, PR #32):** rood na 24 s · na de fix groen na ± 100 s (UI-tests op drie viewports) · na de merge live op test inclusief smoketest na ± 3 minuten. Dat is langer dan de demo zelf. Doe daarom stap 5 **vóór** stap 3 en 4: laat PR #26 rood en geblokkeerd zien, push de fix, en ga dan redigeren en uitzenden. Kom aan het eind terug bij de groene PR: *Merge* en laat de deploy lopen terwijl je afsluit.
 
 ### 6. Afsluiten (15 s)
 Toon `CHANGELOG.md`:
@@ -65,8 +68,11 @@ Eventueel: `testbewijs/stap-5.3/` (de hele flow op drie schermformaten) en het P
 ## Na de demo
 PR #26 is na stap 5 gemergd. Wil je de demo nog een keer geven, maak dan opnieuw een demobranch:
 ```
-git switch -c demo/kapotte-filter-2 origin/test
+git worktree add -b demo/kapotte-filter-2 <nieuwe map> origin/test
+cd <nieuwe map>
 # in public/logic.js: === 'goedgekeurd'  →  !== 'uitgesloten'
-git commit -am "Uitzending: filter op alles behalve uitgesloten (demo: dit is fout)" && git push -u origin HEAD
+git add public/logic.js
+git commit -m "Uitzending: filter op alles behalve uitgesloten (demo: dit is fout)"
+git push -u origin HEAD
 ```
-en open een PR naar `test`.
+en open een PR naar `test`. Gebruik bij het committen altijd `git add <bestand>` en nooit `git commit -a`: dat neemt ook onafgemaakt werk uit dezelfde map mee.
