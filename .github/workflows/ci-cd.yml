@@ -1,0 +1,25 @@
+# CI/CD van de Release-omroeper.
+# Stap 1.1: alleen de job test (lint en unit-tests) bij een pull request naar test of main.
+# UI-tests en deploy volgen in latere stappen.
+name: ci-cd
+
+on:
+  pull_request:
+    branches: [test, main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:unit
