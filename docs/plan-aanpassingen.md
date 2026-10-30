@@ -24,3 +24,5 @@ Het project volgt het totaalplan (`Release-omroeper-totaalplan.docx`). Hier staa
 
 - Stap 2.1: `teksten.fouten` heeft twee nieuwe meldingen gekregen, `verkeerdType(veld)` en `periodeOmgedraaid`. `verkeerdeUrl` noemt nu de echte repository. In het contract (`docs/contract.md`) zijn de meldingentabel en de uitleg over `veld` (`bestand` en `bericht`) bijgewerkt.
 - Node.js 22.12 of nieuwer, want Vitest vraagt die versie.
+- Stap 3.3/3.6: de teller (*n van m goedgekeurd*) met *Start uitzending* staat **onderaan** als vaste balk, zoals in het goedgekeurde ontwerp en `CLAUDE.md`, niet bovenaan zoals het plan als voorbeeld noemt.
+- Stap 3.3: de tekst op de sluitknop van de uitzending is *Uitzending sluiten* (de naam uit `CLAUDE.md`) in plaats van alleen *Esc* uit het prototype.

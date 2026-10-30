@@ -31,9 +31,10 @@ const LEADER_TIK = 1000;
 
 /**
  * De toestand van de redactie. `bewerkt` is het PR-nummer van de kaart in de bewerkstand, of null.
- * @type {{ concept: null | { repository: string, periode: { van: string, tot: string }, gegenereerdOp?: string }, berichten: import('./logic.js').Bericht[], bewerkt: number | null }}
+ * `gewijzigd` is waar als er redactiewerk is dat nog niet is geëxporteerd.
+ * @type {{ concept: null | { repository: string, periode: { van: string, tot: string }, gegenereerdOp?: string }, berichten: import('./logic.js').Bericht[], bewerkt: number | null, gewijzigd: boolean }}
  */
-const staat = { concept: null, berichten: [], bewerkt: null };
+const staat = { concept: null, berichten: [], bewerkt: null, gewijzigd: false };
 
 /** Vaste elementen uit index.html. */
 const el = {
@@ -305,6 +306,7 @@ function wisselStatus(pr, actie) {
     ? (huidig === 'goedgekeurd' ? 'concept' : 'goedgekeurd')
     : (huidig === 'uitgesloten' ? 'concept' : 'uitgesloten');
   staat.berichten = wijzigStatus(staat.berichten, pr, nieuw);
+  staat.gewijzigd = true;
   toonRedactie({ pr, actie });
   meld({ goedgekeurd: meldingen.goedgekeurd, uitgesloten: meldingen.uitgesloten, concept: meldingen.terugNaarConcept }[nieuw](pr));
 }
@@ -354,12 +356,21 @@ function slaOp(formulier) {
     return;
   }
   staat.berichten = bewerkBericht(staat.berichten, pr, { kop, uitleg });
+  staat.gewijzigd = true;
   zetBewerkstand(null);
   meld(meldingen.opgeslagen(pr));
 }
 
-/** Biedt het nagekeken journaal aan als download (journaal-nagekeken.json). */
+/**
+ * Biedt het nagekeken journaal aan als download (journaal-nagekeken.json).
+ * Staat er nog niet-opgeslagen tekst in een bewerkstand, dan vraagt de app eerst of je toch wilt exporteren.
+ */
 function exporteer() {
+  const open = leesBewerkstand();
+  if (open?.gewijzigd && !window.confirm(kaart.exportZonderWijziging(open.pr))) {
+    meld(meldingen.exportGeannuleerd);
+    return;
+  }
   const json = exporteerJournaal(staat.concept, staat.berichten);
   const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
   const link = maak('a', { href: url, download: kaart.bestandsnaamExport, hidden: true });
@@ -367,8 +378,16 @@ function exporteer() {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+  staat.gewijzigd = false;
   meld(meldingen.geexporteerd);
 }
+
+// Wie het tabblad sluit of ververst met werk dat nog niet is geëxporteerd, krijgt eerst de vraag van de browser.
+window.addEventListener('beforeunload', (event) => {
+  if (!staat.gewijzigd && !leesBewerkstand()?.gewijzigd) return;
+  event.preventDefault();
+  event.returnValue = '';
+});
 
 el.kaarten.addEventListener('click', (event) => {
   const knop = event.target.closest('button[data-actie]');
@@ -474,6 +493,8 @@ function startUitzending() {
 function sluitUitzending() {
   if (el.uitzending.hidden) return;
   stopLeader();
+  // Een melding uit de uitzending hoort niet meer in de redactie.
+  el.melding.textContent = '';
   el.uitzending.hidden = true;
   el.redactie.inert = false;
   // Het verlaten van volledig scherm verplaatst de focus; zet hem daarna pas terug op Start uitzending.
@@ -632,6 +653,13 @@ function toonUitzending() {
   el.balk.hidden = leader || eind;
   if (leader) startLeader();
   (leader ? el.frame.querySelector('.leader__overslaan') : eind ? el.frame.querySelector('.knop--primair') : el.volgendeknop).focus();
+  // De focus ligt op een knop; meld via #melding welk scherm er nu in beeld is, zodat een schermlezer het hoort.
+  if (!leader) {
+    // Eerst leegmaken, zodat ook een gelijke kop op het volgende scherm opnieuw wordt voorgelezen.
+    el.melding.textContent = '';
+    const kop = el.frame.querySelector('h1').textContent;
+    setTimeout(() => meld(kop), 50);
+  }
 }
 
 /**
@@ -683,6 +711,7 @@ async function laadBestand(bestand) {
   staat.concept = { repository: concept.repository, periode: concept.periode, gegenereerdOp: concept.gegenereerdOp };
   staat.berichten = concept.berichten.map((b) => ({ ...b, publicatiestatus: PUBLICATIESTATUS }));
   staat.bewerkt = null;
+  staat.gewijzigd = false;
   verbergFout();
   toonRedactie();
   meld(meldingen.ingeladen(staat.berichten.length));

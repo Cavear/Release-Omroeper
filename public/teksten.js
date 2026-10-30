@@ -70,7 +70,9 @@ export const kaart = {
   eerstOpnemen: 'Dit bericht is uitgesloten. Kies eerst Weer opnemen om het goed te keuren.',
   bestandsnaamExport: 'journaal-nagekeken.json',
   /** @param {number} nr @returns {string} */
-  wijzigingWeggooien: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen. Wil je die weggooien?`
+  wijzigingWeggooien: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen. Wil je die weggooien?`,
+  /** @param {number} nr @returns {string} */
+  exportZonderWijziging: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen en komt niet in de export. Toch exporteren?`
 };
 
 /** Teller en startknop. */
@@ -110,7 +112,8 @@ export const meldingen = {
   geexporteerd: 'Journaal opgeslagen als journaal-nagekeken.json',
   gekopieerd: 'Het totaaloverzicht staat op je klembord.',
   kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
-  importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.'
+  importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.',
+  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
