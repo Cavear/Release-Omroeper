@@ -358,3 +358,7 @@ button, input, textarea { font: inherit; color: inherit; }
 @keyframes kras { 0% { transform: translateX(0); } 33% { transform: translateX(-14px); } 66% { transform: translateX(9px); } 100% { transform: translateX(0); } }
 @keyframes schuif { to { transform: translateX(-50%); } }
 @keyframes pols { 0% { transform: scale(1.06); opacity: .7; } 30% { transform: scale(1); opacity: 1; } }
+
+/* ============ 8. Uitbreidingen voor de app (geen nieuwe tokenwaarden) ============ */
+/* Verticale stapel met dezelfde tussenruimte als .pagina, voor <main> en het werkgebied. */
+.stapel { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
