@@ -1,5 +1,5 @@
 # CI/CD van de Release-omroeper.
-# Job test: lint en unit-tests bij een pull request naar test of main, en bij een push naar test of main.
+# Job test: lint, unit-tests en UI-tests (3 viewports) bij een pull request naar test of main, en bij een push naar test of main.
 # Job deploy: na een geslaagde test zet hij public/ via SFTP op STRATO:
 #   push naar test → map app1-test (http://app1-test.caitlinveenendaal.nl/)
 #   push naar main → map app1      (http://app1.caitlinveenendaal.nl/), direct, zonder goedkeuringsstap.
@@ -37,6 +37,15 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test:unit
+      - run: npx playwright install --with-deps chromium
+      # UI-tests op mobiel, tablet en desktop tegen scripts/serve.js; bij een fout een screenshot en trace.
+      - run: npm run test:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-rapport
+          path: playwright-report/
+          retention-days: 14
 
   deploy:
     name: deploy-${{ github.ref == 'refs/heads/main' && 'prod' || 'test' }}
