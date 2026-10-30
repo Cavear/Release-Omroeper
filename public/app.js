@@ -195,12 +195,12 @@ function lokaleDatum(dagenTerug = 0) {
 /** Bouwt het formulier voor het ophalen van PR’s uit een publieke GitHub-repository. */
 function bouwGitHubDialoog() {
   const repository = maak('input', {
-    id: 'github-repository', type: 'text', required: true, autocomplete: 'url',
+    id: 'github-repository', type: 'text', required: true, autocomplete: 'off',
     placeholder: githubTeksten.repositoryVoorbeeld,
   });
   const van = maak('input', { id: 'github-van', type: 'date', required: true, value: lokaleDatum(7) });
   const tot = maak('input', { id: 'github-tot', type: 'date', required: true, value: lokaleDatum() });
-  const fout = maak('p', { id: 'github-fout', class: 'veld__fout', role: 'alert', hidden: true });
+  const fout = maak('p', { id: 'github-fout', class: 'veld__fout', role: 'alert', tabindex: '-1', hidden: true });
   const ophalen = maak('button', { type: 'submit', class: 'knop knop--primair knop--groot' }, githubTeksten.ophalen);
   const annuleren = maak('button', { type: 'button', class: 'knop knop--groot' }, githubTeksten.annuleren);
   const formulier = maak('form', { class: 'help__inhoud', id: 'github-formulier' },
@@ -365,7 +365,7 @@ function maakKaart(b) {
     // In de bewerkstand blijft de kop als verborgen naam van de kaart bestaan.
     maak('h3', { class: bewerkstand ? 'visueel-verborgen' : 'kaart__kop', id: kopId }, b.kop),
     !bewerkstand && maak('p', { class: 'kaart__uitleg' }, b.uitleg),
-    maak('p', { class: 'kaart__wie' }, `${kaart.voor} ${b.voorWie ?? kaart.voorOnbekend}`),
+    maak('p', { class: 'kaart__wie' }, `${kaart.voor} ${b.voorWie?.trim() || kaart.voorOnbekend}`),
     bewerkstand ? maakBewerkformulier(b) : maakActies(b));
 }
 

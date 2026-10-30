@@ -6,7 +6,7 @@ Dezelfde tekst staat in de app zelf: `public/handleiding.html`, bereikbaar via *
 
 ## 1. PR’s ophalen of een concept laten maken
 
-Klik in de redactietafel op *GitHub ophalen*, vul een openbare repository in als `eigenaar/naam` en kies de periode waarin PR’s zijn gemergd. De app haalt maximaal vijf gemergde PR’s op. De originele PR-titel en beschrijving worden overgenomen; alle berichten blijven op *concept*. Er is geen GitHub-token nodig. Privé-repositories zijn niet rechtstreeks vanuit de browser op te halen.
+Klik in de redactietafel op *GitHub ophalen*, vul een openbare repository in als `eigenaar/naam` en kies de periode waarin PR’s zijn gemergd. De app haalt maximaal vijf gemergde PR’s op. Zijn er meer dan vijf, dan wordt niets ingeladen en moet je de periode verkleinen. De originele PR-titel en beschrijving worden overgenomen; alle berichten blijven op *concept*. Er is geen GitHub-token nodig. Privé-repositories zijn niet rechtstreeks vanuit de browser op te halen.
 
 Wil je licht komische koppen en zakelijke samenvattingen, vraag Claude Code dan om `/journaal` voor een repository en periode. Claude leest de gemergde PR's (alleen lezen) en schrijft `journaal-concept.json`. Dat bestand kun je met *Concept importeren* inladen. De directe GitHub-import maakt geen samenvattingen en schrijft niets terug naar GitHub.
 

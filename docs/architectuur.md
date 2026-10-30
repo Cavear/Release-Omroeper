@@ -31,7 +31,6 @@ Voorbeelden van de hele route staan in [`journaal/`](../journaal/): de oefenrepo
 - De directe koppeling gebruikt alleen de publieke GitHub API en verstuurt geen token. Privé-repositories worden niet ondersteund in de browser.
 - De MCP-route gebruikt het leestoken (`GITHUB_TOKEN_READ`) alleen als omgevingsvariabele op de laptop van wie het journaal maakt; privédata blijft via die route en een handmatig conceptbestand lopen.
 - Er staat geen token in de code, in de browser of op de server. Een token op een publieke site kan iedereen uitlezen.
-- Het leestoken (`GITHUB_TOKEN_READ`) staat alleen als omgevingsvariabele op de laptop van wie het journaal maakt.
 - Zo kan de site ook niets per ongeluk wijzigen in een repository.
 
 ## Onderdelen van de app

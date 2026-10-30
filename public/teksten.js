@@ -101,7 +101,7 @@ export const leeg = {
 /** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
 export const github = {
   kop: 'Gemergde PR’s ophalen',
-  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
+  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. Bij meer dan vijf resultaten wordt niets ingeladen; verklein dan de periode. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
   repositoryLabel: 'Repository (owner/repo)',
   repositoryVoorbeeld: 'Cavear/vibe_webshop',
   vanLabel: 'Gemergd vanaf',
@@ -119,6 +119,7 @@ export const github = {
     netwerk: 'GitHub is niet bereikbaar. Controleer je verbinding en probeer opnieuw.',
     'privé': 'Repository niet gevonden of niet openbaar. De browserkoppeling kan alleen publieke repositories ophalen.',
     limiet: 'GitHub heeft te veel verzoeken ontvangen. Wacht even en probeer opnieuw.',
+    onvolledig: 'GitHub heeft geen volledige zoekresultaten teruggegeven. Probeer opnieuw of verklein de periode.',
     api: 'GitHub gaf geen bruikbaar antwoord. Controleer repository en periode en probeer opnieuw.'
   }
 };
