@@ -12,4 +12,9 @@ export default [
     files: ['tests/**/*.js', 'scripts/**/*.js', '*.config.js', 'docs/design/bron/*.mjs'],
     languageOptions: { globals: globals.node },
   },
+  {
+    // In UI- en smoketests draait code binnen page.evaluate in de browser.
+    files: ['tests/ui/**/*.js', 'tests/smoke/**/*.js', 'testbewijs/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
 ];

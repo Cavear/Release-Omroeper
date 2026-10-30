@@ -6,3 +6,4 @@ config.local.php
 node_modules/
 .playwright-mcp/
 test-results/
+playwright-report/

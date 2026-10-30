@@ -6,7 +6,7 @@ Het project volgt het totaalplan (`Release-omroeper-totaalplan.docx`). Hier staa
 
 - **Het is een demo**, geen site die echt gebruikt gaat worden.
 - **De repo is privé op het gratis GitHub-plan.** Branch protection, environment-secrets en verplichte reviewers voor een environment zijn daar niet beschikbaar.
-- **Deploy naar test gaat automatisch** via GitHub Actions en SFTP (sinds 30-10-2026; eerst handmatig met FileZilla). De testomgeving is de map `app1-test` op `http://app1-test.caitlinveenendaal.nl/`.
+- **Deploy naar test gaat automatisch** via GitHub Actions en SFTP (sinds 30-10-2026; eerst handmatig met FileZilla). De testomgeving is de map `App1-test` op `http://app1-test.caitlinveenendaal.nl/`.
 - **Geen HTTPS op het subdomein.** Voor de demo is dat niet nodig.
 
 ## Per stap
@@ -17,7 +17,7 @@ Het project volgt het totaalplan (`Release-omroeper-totaalplan.docx`). Hier staa
 | 1.2 Branch protection | Op `test` en `main` alleen mergen via PR, check `test` verplicht | **Vervalt** (niet mogelijk op het gratis plan). Afspraak: altijd mergen via een PR met een groene check `test`. |
 | 1.3 Deploy naar test | Job `deploy` via SFTP bij een push naar `test` | Job `deploy-test` met `wlixcc/SFTP-Deploy-Action@v1.2.6`, met **repository secrets** (`SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD`, `TEST_SFTP_PATH`) in plaats van environment-secrets. Wist niets op de server. |
 | 1.4 Smoketest | Job `smoke` na `deploy`, met `vars.SITE_URL` | Job `smoke` draait na `deploy-test`, en los via **Run workflow** met een eigen URL; lokaal met `npm run test:smoke`. Controleert ook de kop *De redactietafel*. |
-| 1.5 Prod met goedkeuring | Deploy naar prod na goedkeuring, daarna de smoketest | **Zonder goedkeuringsstap** (besluit 30-10-2026): bij een merge naar `main` en geslaagde tests gaat de app direct naar de map `app1` (`http://app1.caitlinveenendaal.nl/`), daarna de smoketest op prod. De bewuste stap is de PR van `test` naar `main`. Secret `PROD_SFTP_PATH`. `test:ui` gaat in fase 5 alsnog in de job `test`. |
+| 1.5 Prod met goedkeuring | Deploy naar prod na goedkeuring, daarna de smoketest | **Zonder goedkeuringsstap** (besluit 30-10-2026): bij een merge naar `main` en geslaagde tests gaat de app direct naar de map `App1-Prod` (`http://app1.caitlinveenendaal.nl/`), daarna de smoketest op prod. De bewuste stap is de PR van `test` naar `main`. Secret `PROD_SFTP_PATH`. Sinds fase 5 draait ook `test:ui` in de job `test`. |
 | 3.x / 5.x Eindscherm | *Kopieer overzicht* met de Clipboard API | Zonder HTTPS werkt `navigator.clipboard` niet. Bouw een reserve-route: de oudere kopieermethode, of als dat niet lukt de tekst geselecteerd in beeld zodat je hem met Ctrl+C kopieert. Lokaal (`localhost`) werkt de Clipboard API wel. |
 
 ## Kleine aanvullingen

@@ -7,7 +7,7 @@
 ```bash
 npm run lint        # ESLint
 npm run test:unit   # unit-tests met Vitest (tests/unit/)
-npm run test:ui     # UI-tests met Playwright (tests/ui/, volgen in fase 3)
+npm run test:ui     # UI-tests met Playwright (tests/ui/), op mobiel, tablet en desktop
 npm run test:smoke  # smoketest tegen BASE_URL (standaard de testomgeving)
 ```
 
@@ -21,20 +21,22 @@ De logica in `public/logic.js` heeft geen DOM, zodat je hem zonder browser kunt 
 - `maakTotaaloverzicht`: kopieerbare tekst met alle goedgekeurde berichten en hun links
 - `exporteerJournaal`: het bewerkte journaal als bestand
 
-*Volgt.*
+Bestanden: `tests/unit/valideerConcept.test.js`, `testdata.test.js`, `redactie.test.js`, `export.test.js`, `teksten.test.js` (113 tests).
 
 ## UI-tests (Playwright)
 
-Op mobiel (390×844), tablet (768×1024) en desktop (1440×900); de uitzending ook liggend op 844×390.
+Elke test draait drie keer, via de projecten in `playwright.config.js`: **mobiel** (390×844, touch), **tablet** (768×1024, touch) en **desktop** (1440×900). `scripts/serve.js` serveert `public/` op `http://localhost:4173/`; XAMPP is niet nodig. Bij een fout bewaart Playwright een screenshot en een trace; het HTML-rapport staat in `playwright-report/` (in de CI als artifact *playwright-rapport*).
 
-- Een geldig concept importeren
-- Een ongeldig bestand importeren: de foutmelding verschijnt en er wordt niets geladen
-- Een kop aanpassen, goedkeuren en de uitzending starten
-- Uitgesloten berichten en concepten komen niet in de uitzending
-- *Volgende*, de bronlink en het totaaloverzicht
-- Responsive en toegankelijkheid: geen horizontaal scrollen, knoppen van minimaal 44 px, kolommen per breakpoint, vegen en axe
+| Bestand | Wat het test |
+|---|---|
+| `import.spec.js` | Geldig concept → 5 kaarten; `fout-6-berichten` en `fout-geen-json` → foutmelding en niets geladen; een fout bestand laat bestaand werk staan |
+| `uitzending.spec.js` | Kop aanpassen, goedkeuren, uitsluiten → alleen het goedgekeurde bericht met de nieuwe kop in de uitzending; bronlink, Volgende (knop en pijltje rechts), totaaloverzicht, Kopieer overzicht, Esc, aftelleader, Start uit zonder goedkeuring |
+| `responsive.spec.js` | Per scherm (lege staat, redactie, bewerkstand, Help, foutmelding, leader, titelkaart, nieuwsframes, eindscherm): geen horizontaal scrollen, knoppen ≥ 44×44, **axe** zonder serious/critical; kolommen 1/2/3; langste kop en kop van 90 tekens binnen beeld (ook liggend 844×390); vegen op mobiel; animaties uit bij reduced motion |
+| `uitleg.spec.js` | Lege staat met 3 stappen; Help met knop en `?`, Escape sluit; uitleg bij elke status met toetsenbord en tik; elke knop en elk veld heeft een naam (ook in Help en uitzending); foutmelding noemt bericht, veld en oplossing; handleidinglink |
 
-*Volgt.*
+Controles dat de tests echt iets vangen: zonder tablet-breakpoint faalt de kolomtest op tablet; zonder uitleg bij *concept* falen twee uitleg-tests.
+
+`npm run test:smoke` draait `tests/smoke/` alleen op desktop, tegen `BASE_URL` (standaard de testomgeving).
 
 ## Testdata
 
@@ -58,11 +60,11 @@ Verandert het contract, pas dan de generator aan en draai `npm run testdata` opn
 
 ## Testbewijs
 
-Screenshots en rapporten van de kwaliteitscheck (`/kwaliteitscheck`) staan in `testbewijs/`.
+In `testbewijs/`: per stap screenshots en rapporten, onder andere `stap-3.4` (redactie tegen het ontwerp), `stap-3.5` (uitzending), `stap-3.7` (Lighthouse) en `stap-5.3` (de hele flow op de test-URL, per stap en viewport). Screenshots van de kwaliteitscheck (`/kwaliteitscheck`) staan in `testbewijs/kwaliteitscheck/`.
 
 ## Smoketest na een upload
 
-Bij een push naar `test` zet de CI de app op STRATO (map `app1-test`) en draait daarna vanzelf de smoketest. Los draaien kan ook:
+Bij een push naar `test` zet de CI de app op STRATO (map `App1-test`) en draait daarna vanzelf de smoketest. Los draaien kan ook:
 
 - **Lokaal:** `npm run test:smoke` (standaard `http://app1-test.caitlinveenendaal.nl/`), of met een andere URL: `BASE_URL=<url> npm run test:smoke`.
 - **In GitHub:** Actions → *ci-cd* → *Run workflow*, eventueel met een andere URL.
