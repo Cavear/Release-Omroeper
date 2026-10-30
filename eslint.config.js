@@ -14,7 +14,7 @@ export default [
   },
   {
     // In UI- en smoketests draait code binnen page.evaluate in de browser.
-    files: ['tests/ui/**/*.js', 'tests/smoke/**/*.js'],
+    files: ['tests/ui/**/*.js', 'tests/smoke/**/*.js', 'testbewijs/**/*.mjs'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];
