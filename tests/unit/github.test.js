@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { valideerConcept } from '../../public/logic.js';
 import { GitHubFout, haalGitHubConcept } from '../../public/github.js';
+import * as teksten from '../../public/teksten.js';
 
 /** Maakt een eenvoudige JSON-response voor fetch-tests.
  * @param {unknown} data
@@ -213,7 +214,7 @@ describe('journaalkoppen', () => {
       ['Dependency-update: @playwright/test vastgezet op 1.64.1', /^(In de machinekamer|Bouten aangedraaid): @playwright\/test/],
       ['Extra Playwright-tests voor mandje en bestellen', /^(Nieuws uit de proefkamer|Op de proefbank): Extra Playwright-tests/],
       ['README met instructies voor starten', /^(Uit de leeszaal|Voor de leesgrage): README/],
-      ['Update button styles', /^(Een nieuw pakje|De werkplaats in zondagse kleren): Update button styles$/],
+      ['Update button styles', /^(Een nieuw pakje|Opnieuw in de verf): Update button styles$/],
       ['feat(checkout): add PayPal as payment option', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): add PayPal/],
       ['Zoekveld op de productpagina', /^(Dames en heren|Uit de werkplaats|Bericht van het front): Zoekveld op de productpagina$/],
     ];
@@ -233,9 +234,9 @@ describe('journaalkoppen', () => {
   });
 
   it('verzint geen onderwerp bij een vage titel en zet die op meer-info-nodig', async () => {
-    for (const title of ['fix bug', 'WIP', 'Update', 'fix: bugs']) {
+    for (const title of ['fix bug', 'WIP', 'Update', 'fix: bugs', 'Fixes #12', 'Fix typo', 'minor fixes', 'Closes #4']) {
       const b = await bericht({ title });
-      expect(b.kop).toBe('Er werd gesleuteld in de werkplaats, maar waaraan?');
+      expect(teksten.github.koppen.vaag).toContain(b.kop);
       expect(b.status).toBe('meer-info-nodig');
     }
   });
@@ -243,6 +244,25 @@ describe('journaalkoppen', () => {
   it('maakt van een tweede dubbele punt een streepje en houdt hoofdletters van namen', async () => {
     const b = await bericht({ title: "GitHub ophalen: gemergde PR's als concept" });
     expect(b.kop).toMatch(/: GitHub ophalen – gemergde PR's als concept$/);
+  });
+
+  it('belooft geen herstel, onderhoud of opmaak die niet in de titel staat', async () => {
+    const gevallen = [
+      ['Revert "Add PayPal as payment option"', /^(Terug naar de vorige stand|Op de terugweg): /],
+      ['Add bug report template', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['PIN-betaling toevoegen', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Nieuwe versie van de productpagina', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Knop Bestellen toevoegen', /^(Primeur in de werkplaats|Gloednieuw|Kersvers van de band): /],
+      ['Bulk actions in het beheer', /^(Dames en heren|Uit de werkplaats|Bericht van het front): /],
+      ['Pin-code scherm', /^(Dames en heren|Uit de werkplaats|Bericht van het front): /],
+    ];
+    for (const [title, verwacht] of gevallen) expect((await bericht({ title })).kop).toMatch(verwacht);
+  });
+
+  it('laat een bekend voorvoegsel de soort bepalen en weghalen, maar een gewone dubbele punt staan', async () => {
+    expect((await bericht({ title: 'docs: fix typo in README' })).kop).toMatch(/^(Uit de leeszaal|Voor de leesgrage): fix typo in README$/);
+    expect((await bericht({ title: 'chore(deps): bump vite to 6' })).kop).toMatch(/^(In de machinekamer|Bouten aangedraaid): bump vite to 6$/);
+    expect((await bericht({ title: 'Winkelmandje: toont weer de juiste inhoud' })).kop).toMatch(/: Winkelmandje – toont weer de juiste inhoud$/);
   });
 
   it('blijft met opener binnen 90 tekens', async () => {

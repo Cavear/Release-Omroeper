@@ -65,7 +65,16 @@ function kortIn(tekst, max) {
 }
 
 /** Titels die niets zeggen over de wijziging; daar verzinnen we geen onderwerp bij. */
-const VAGE_TITEL = /^(fix(es|ed)?|fix(es|ed)? (a |the |some )?bugs?|bugs?|bug ?fix(es)?|updates?|updated|wip|changes|misc|tweaks?|kleine (fix|aanpassing)(en)?|aanpassingen)$/i;
+const VAGE_TITEL = /^((minor |small |kleine )?(fix(es|ed)?|bugs?|bug ?fix(es)?|updates?|updated|wip|changes|misc|tweaks?|typos?|aanpassing(en)?)( (a |the |some )?(bugs?|typos?))?( #\d+)?|(fix(es|ed)?|closes|resolves) #\d+|#\d+)$/i;
+
+/** Bekende voorvoegsels (conventional commits) en de soort wijziging die erbij hoort. */
+const VOORVOEGSELS = {
+  feat: 'nieuw', feature: 'nieuw', fix: 'herstel', bugfix: 'herstel', hotfix: 'herstel',
+  docs: 'docs', doc: 'docs', test: 'test', tests: 'test', style: 'stijl', ci: 'ci', build: 'onderhoud',
+  refactor: 'opruim', revert: 'revert', deps: 'onderhoud', 'dependency-update': 'onderhoud',
+  chore: null, perf: null,
+};
+const VOORVOEGSEL = /^\[?([a-z-]+)(\(([^)]*)\))?!?\]?:\s*/i;
 
 /**
  * Maakt een journaalkop van een PR-titel: een vaste opener per soort wijziging (uit teksten.js)
@@ -77,10 +86,20 @@ const VAGE_TITEL = /^(fix(es|ed)?|fix(es|ed)? (a |the |some )?bugs?|bugs?|bug ?f
 function maakKop(titel, prNummer) {
   const { koppen } = teksten;
   const schoon = titel.trim();
-  // Voorvoegsels als 'feat:', 'Fix(mandje):' of 'Dependency-update:' horen niet in de kop.
-  const onderwerp = schoon.replace(/^\[?[\w-]+(\([^)]*\))?!?\]?:\s*/, '').replace(/[.\s]+$/, '');
-  if (onderwerp.length < 4 || VAGE_TITEL.test(onderwerp)) return { kop: koppen.vaag, nakijken: true };
-  const soort = koppen.soorten.find(({ woorden }) => woorden.test(schoon));
+  // Alleen bekende voorvoegsels ('feat:', 'fix(mandje):', 'Dependency-update:') verdwijnen uit de kop;
+  // bij 'Winkelmandje: toont weer…' blijft alles staan.
+  const voorvoegsel = schoon.match(VOORVOEGSEL);
+  const bekend = voorvoegsel && Object.hasOwn(VOORVOEGSELS, voorvoegsel[1].toLowerCase());
+  // Bij 'chore(deps):' telt de scope.
+  const sleutel = bekend && (voorvoegsel[3]?.toLowerCase() === 'deps' ? 'deps' : voorvoegsel[1].toLowerCase());
+  const onderwerp = (bekend ? schoon.slice(voorvoegsel[0].length) : schoon).replace(/[.\s]+$/, '');
+  if (onderwerp.length < 4 || VAGE_TITEL.test(onderwerp)) {
+    return { kop: koppen.vaag[prNummer % koppen.vaag.length], nakijken: true };
+  }
+  // Een bekend voorvoegsel bepaalt de soort; anders (ook bij 'chore:') de eerste soort met een trefwoord.
+  const vast = sleutel ? VOORVOEGSELS[sleutel] : null;
+  const soort = (vast && koppen.soorten.find((s) => s.soort === vast))
+    || koppen.soorten.find(({ woorden }) => woorden.test(onderwerp));
   const openers = soort ? soort.openers : koppen.algemeen;
   const opener = openers[prNummer % openers.length];
   // Hoofdletters blijven zoals in de titel (namen als GitHub of Playwright); een tweede dubbele punt wordt een streepje.
