@@ -1,11 +1,18 @@
 # CI/CD van de Release-omroeper.
-# Job test (stap 1.1): lint en unit-tests bij een pull request naar test of main.
-# Job smoke (stap 1.4): handmatig starten (Run workflow) na een upload met FileZilla.
-# Er is geen deploy-job: de upload naar STRATO gebeurt handmatig.
+# Job test: lint en unit-tests bij een pull request naar test of main, en bij een push naar test of main.
+# Job deploy: na een geslaagde test zet hij public/ via SFTP op STRATO:
+#   push naar test → map app1-test (http://app1-test.caitlinveenendaal.nl/)
+#   push naar main → map app1      (http://app1.caitlinveenendaal.nl/), direct, zonder goedkeuringsstap.
+#   Er wordt niets gewist op de server; alleen de bestanden van de app worden overschreven.
+# Job smoke: na de deploy tegen dezelfde omgeving, of handmatig met Run workflow (eigen URL).
+# Secrets (repository secrets; environment-secrets werken niet op het gratis plan voor een privérepo):
+#   SFTP_HOST, SFTP_USER, SFTP_PASSWORD, TEST_SFTP_PATH, PROD_SFTP_PATH.
 name: ci-cd
 
 on:
   pull_request:
+    branches: [test, main]
+  push:
     branches: [test, main]
   workflow_dispatch:
     inputs:
@@ -19,7 +26,7 @@ permissions:
 jobs:
   test:
     name: test
-    if: github.event_name == 'pull_request'
+    if: github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,12 +38,36 @@ jobs:
       - run: npm run lint
       - run: npm run test:unit
 
+  deploy:
+    name: deploy-${{ github.ref == 'refs/heads/main' && 'prod' || 'test' }}
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    # Nooit twee deploys tegelijk naar dezelfde omgeving.
+    concurrency: deploy-${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      # Alleen de app uit public/; geen tests, testdata of node_modules.
+      # wlixcc/SFTP-Deploy-Action versie v1.2.6 (nieuwste release, april 2025).
+      - uses: wlixcc/SFTP-Deploy-Action@v1.2.6
+        with:
+          server: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          sftp_only: true
+          delete_remote_files: false
+          local_path: ./public/*
+          remote_path: ${{ github.ref == 'refs/heads/main' && secrets.PROD_SFTP_PATH || secrets.TEST_SFTP_PATH }}
+
   smoke:
     name: smoke
-    if: github.event_name == 'workflow_dispatch'
+    needs: deploy
+    # Na een geslaagde deploy, of los via Run workflow (dan is deploy overgeslagen).
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.deploy.result == 'success')
     runs-on: ubuntu-latest
     env:
-      BASE_URL: ${{ inputs.base_url || vars.SITE_URL }}
+      BASE_URL: ${{ inputs.base_url || (github.ref == 'refs/heads/main' && 'http://app1.caitlinveenendaal.nl/' || 'http://app1-test.caitlinveenendaal.nl/') }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

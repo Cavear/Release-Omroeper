@@ -2,6 +2,8 @@
 
 Dit bestand is de overdracht tussen de MCP-route (skill `/journaal`) en de webapp. De generator van de testdata en de import in de app gebruiken allebei dit contract. Verandert het formaat, pas dan eerst dit document aan.
 
+Het nagekeken journaal dat de app exporteert (*Journaal exporteren*, `journaal-nagekeken.json`) volgt hetzelfde contract. Je kunt het dus opnieuw importeren en verder werken.
+
 ## Formaat
 
 ```json
@@ -61,6 +63,22 @@ Dit bestand is de overdracht tussen de MCP-route (skill `/journaal`) en de webap
 | `goedgekeurd` | Nagekeken en goed bevonden door de redactie | ja |
 | `uitgesloten` | Komt bewust niet in het journaal | nee |
 
+### Statusovergangen in de redactie
+
+`wijzigStatus` in `public/logic.js` staat alleen deze overgangen toe (`OVERGANGEN`). Elke overgang hoort bij een knop op de kaart.
+
+| Knop | Van | Naar |
+|---|---|---|
+| *Goedkeuren* | `concept`, `meer-info-nodig` | `goedgekeurd` |
+| *Terug naar concept* | `goedgekeurd` | `concept` |
+| *Uitsluiten* | `concept`, `meer-info-nodig`, `goedgekeurd` | `uitgesloten` |
+| *Weer opnemen* | `uitgesloten` | `concept` |
+
+Afspraken voor de UI:
+- Op een **uitgesloten** kaart is *Goedkeuren* uitgeschakeld (`disabled`), met uitleg. Eerst *Weer opnemen*, dan pas goedkeuren.
+- `meer-info-nodig` komt alleen uit het conceptbestand. Na *Goedkeuren* of *Uitsluiten* gaat een bericht via *Terug naar concept* of *Weer opnemen* naar `concept`, niet terug naar `meer-info-nodig`. Dat is een bewuste keuze: de redactie heeft het bericht dan al bekeken.
+- Bewerken verandert de status niet: een goedgekeurd bericht blijft na het aanpassen van kop of uitleg goedgekeurd.
+
 ## Validatieregels bij import
 
 1. Het bestand is geldige JSON en niet leeg.
@@ -89,7 +107,8 @@ Een bestand met nul berichten is geldig, maar levert in de app de lege staat op.
 ```
 
 - `bericht` is het volgnummer van het bericht in de lijst, vanaf 1. Het is `null` als de fout het hele bestand betreft (geen JSON, leeg, te veel berichten, of een verplicht veld op bestandsniveau ontbreekt of klopt niet).
-- `veld` is de naam van het veld, bijvoorbeeld `bronUrl` of `periode.van`.
+- `veld` is de naam van het veld, bijvoorbeeld `bronUrl` of `periode.van`. Betreft de fout het bestand als geheel (geen JSON, leeg, geen object), dan is `veld` `bestand`; is een bericht zelf geen object, dan is `veld` `bericht`.
+- `valideerConcept` accepteert de inhoud als tekst of als al ingelezen object. Is het bestand geen JSON, leeg of geen object, of ontbreekt `berichten` of is het geen lijst, dan stopt de controle daar; anders komen alle fouten tegelijk terug.
 - `melding` komt uit `teksten.fouten` in `public/teksten.js`. De UI toont elke fout als `Bericht <n>, veld <veld>: <melding>`.
 
 | Regel | Melding uit `teksten.fouten` |
@@ -99,10 +118,11 @@ Een bestand met nul berichten is geldig, maar levert in de app de lege staat op.
 | Verplicht veld ontbreekt | `ontbreekt(veld)` |
 | Meer dan 5 berichten | `teVeel(n)` |
 | Dubbel `prNummer` | `dubbelNummer(nr)` |
-| Verkeerde `bronUrl` | `verkeerdeUrl(nr)` |
+| Verkeerde `bronUrl` | `verkeerdeUrl(repository, nr)` |
 | Onbekende `status` | `onbekendeStatus(waarde)` |
 | `gemergdOp` buiten de periode | `buitenPeriode` |
-| Verkeerd type, ongeldige tijd of `van` na `tot` | `verkeerdType(veld)`: bestaat nog niet, wordt toegevoegd aan `teksten.js` in de stap waarin `valideerConcept` wordt gebouwd |
+| Verkeerd type of ongeldige tijd | `verkeerdType(veld)` |
+| `periode.van` ligt na `periode.tot` | `periodeOmgedraaid` |
 
 ## Voorbeeld
 

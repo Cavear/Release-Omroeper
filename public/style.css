@@ -343,7 +343,6 @@ button, input, textarea { font: inherit; color: inherit; }
 .effect-korrel { inset: 0; z-index: 3; width: 100%; height: 100%; opacity: .16; mix-blend-mode: screen; }
 .effect-flikker { inset: 0; z-index: 3; background: #f2ead8; opacity: .05; }
 .effect-kras { top: 0; bottom: 0; z-index: 3; width: 1px; background: var(--sepia); opacity: .35; }
-.effect-kras:nth-of-type(2) { opacity: .2; }
 
 /* ============ 7. Beweging (alleen als de gebruiker dat toelaat) ============ */
 @media (prefers-reduced-motion: no-preference) {
@@ -358,3 +357,35 @@ button, input, textarea { font: inherit; color: inherit; }
 @keyframes kras { 0% { transform: translateX(0); } 33% { transform: translateX(-14px); } 66% { transform: translateX(9px); } 100% { transform: translateX(0); } }
 @keyframes schuif { to { transform: translateX(-50%); } }
 @keyframes pols { 0% { transform: scale(1.06); opacity: .7; } 30% { transform: scale(1); opacity: 1; } }
+
+/* ============ 8. Uitbreidingen voor de app (geen nieuwe tokenwaarden) ============ */
+/* Verticale stapel met dezelfde tussenruimte als .pagina, voor <main> en het werkgebied. */
+.stapel { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+/* Foutregel onder een invoerveld in de bewerkstand van een kaart. */
+.veld__fout { font-weight: 600; color: var(--error-ink); }
+/* Horizontaal vegen is in de uitzending Volgende; de browser mag dat gebaar niet zelf afhandelen. */
+.uitzending { touch-action: pan-y; }
+/* Actierij van een kaart in twee regels (statusknoppen, dan Bewerken en Bron openen), zoals in het ontwerp. */
+.kaart__acties > .knoppenrij + .knoppenrij { margin-top: var(--space-2); }
+/* Op mobiel staat de tellerbalk vast onderin; de melding komt erboven in plaats van eroverheen. */
+@media (max-width: 767.98px) {
+  .melding { bottom: calc(var(--space-16) * 3); }
+}
+/* Plaats van de twee krassen in de uitzending (zoals het ontwerp), en de tweede iets lichter. */
+.effect-kras--links { left: 23%; }
+.effect-kras--rechts { left: 71%; opacity: .2; }
+/* Knoppen en links in de uitzending liggen boven vignet en korrel, zodat hun contrast niet onder AA zakt. */
+.leader__overslaan { z-index: 5; }
+.uitzending__frame a, .eindscherm .knop { position: relative; z-index: 5; }
+/* Lange bronlinks in het totaaloverzicht breken af in plaats van buiten het vak te lopen. */
+.overzicht a { overflow-wrap: anywhere; }
+/* Eindscherm: ruimte boven voor de sluitknop, en bij weinig hoogte (telefoon liggend) bovenaan beginnen
+   in plaats van de kop boven het beeld weg te centreren. */
+.eindscherm { justify-content: safe center; padding-top: calc(var(--tikdoel-min) + var(--space-6)); }
+/* Gebruikershandleiding (handleiding.html): koppen en lijsten in de huisstijl. */
+.handleiding h2 { font: 700 clamp(1.25rem, 3vw, 1.5rem)/1.25 var(--font-heading); }
+.handleiding ul, .handleiding ol { padding-left: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
+.handleiding dl > div { display: flex; flex-direction: column; gap: var(--space-1); }
+.handleiding code, .handleiding kbd { font-family: var(--font-caption); }
+.handleiding main { max-width: 72ch; }
+.handleiding__blok { padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }

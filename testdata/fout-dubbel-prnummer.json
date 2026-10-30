@@ -1,0 +1,43 @@
+{
+  "repository": "Cavear/vibe_webshop",
+  "periode": {
+    "van": "2026-10-30T09:15:00+01:00",
+    "tot": "2026-10-30T13:00:00+01:00"
+  },
+  "gegenereerdOp": "2026-10-30T12:15:00Z",
+  "berichten": [
+    {
+      "prNummer": 42,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/42",
+      "origineleTitel": "Fix address persistence after refresh",
+      "gemergdOp": "2026-10-30T09:40:00+01:00",
+      "kop": "Opslaanknop onthoudt eindelijk zijn werk",
+      "uitleg": "Na het wijzigen van een adres blijven de gegevens bewaard na verversen.",
+      "voorWie": "Gebruikers die adressen wijzigen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 43,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/43",
+      "origineleTitel": "Show stock count on product page",
+      "gemergdOp": "2026-10-30T10:05:00+01:00",
+      "kop": "Voorraad komt uit de schaduw",
+      "uitleg": "De productpagina toont nu hoeveel stuks er nog op voorraad zijn.",
+      "voorWie": "Klanten die een product willen bestellen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 42,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/42",
+      "origineleTitel": "Fix address persistence after refresh",
+      "gemergdOp": "2026-10-30T09:40:00+01:00",
+      "kop": "Opslaanknop onthoudt eindelijk zijn werk",
+      "uitleg": "Na het wijzigen van een adres blijven de gegevens bewaard na verversen.",
+      "voorWie": "Gebruikers die adressen wijzigen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    }
+  ]
+}

@@ -10,8 +10,9 @@ export const algemeen = {
   redactieKop: 'De redactietafel',
   publicatiestatus: 'Publicatiestatus: niet gecontroleerd',
   publicatieUitleg: 'Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.',
+  onbekendeTijd: '–',
   handleidingLink: 'Lees de gebruikershandleiding',
-  handleidingUrl: 'docs/gebruikershandleiding.md',
+  handleidingUrl: 'handleiding.html',
   /**
    * Metaregel onder de paginakop.
    * @param {{repository: string, datum: string, van: string, tot: string, gegenereerd: string}} m
@@ -58,11 +59,20 @@ export const statussen = {
 export const kaart = {
   /** @param {number} nr @param {string} tijd @returns {string} */
   meta: (nr, tijd) => `PR #${nr} · gemergd ${tijd}`,
+  /** @param {number} nr @returns {string} */
+  metaZonderTijd: (nr) => `PR #${nr}`,
   origineel: 'Origineel:',
   voor: 'Voor:',
   voorOnbekend: 'nog onbekend',
   kopLabel: 'Kop',
-  uitlegLabel: 'Uitleg'
+  uitlegLabel: 'Uitleg',
+  leegVeld: 'Kop en uitleg mogen niet leeg zijn.',
+  eerstOpnemen: 'Dit bericht is uitgesloten. Kies eerst Weer opnemen om het goed te keuren.',
+  bestandsnaamExport: 'journaal-nagekeken.json',
+  /** @param {number} nr @returns {string} */
+  wijzigingWeggooien: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen. Wil je die weggooien?`,
+  /** @param {number} nr @returns {string} */
+  exportZonderWijziging: (nr) => `Je wijziging in bericht #${nr} is nog niet opgeslagen en komt niet in de export. Toch exporteren?`
 };
 
 /** Teller en startknop. */
@@ -101,7 +111,9 @@ export const meldingen = {
   opgeslagen: (nr) => `Wijziging in bericht #${nr} opgeslagen`,
   geexporteerd: 'Journaal opgeslagen als journaal-nagekeken.json',
   gekopieerd: 'Het totaaloverzicht staat op je klembord.',
-  kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.'
+  kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
+  importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.',
+  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
@@ -115,13 +127,18 @@ export const fouten = {
   oplossing: 'Pas het bestand aan en kies opnieuw Concept importeren.',
   geenJson: 'Het bestand is geen geldige JSON. Kies het bestand journaal-concept.json dat Claude heeft gemaakt.',
   leeg: 'Het bestand is leeg.',
+  nietLeesbaar: 'Het bestand kon niet worden gelezen. Kies het bestand opnieuw.',
   /** @param {string} veld @returns {string} */
   ontbreekt: (veld) => `het verplichte veld ${veld} ontbreekt`,
+  /** @param {number} n @returns {string} */
   teVeel: (n) => `Het bestand heeft ${n} berichten; het maximum is 5.`,
   /** @param {number} nr @returns {string} */
   dubbelNummer: (nr) => `PR-nummer ${nr} komt vaker voor; elk bericht moet een eigen PR-nummer hebben`,
-  /** @param {number} nr @returns {string} */
-  verkeerdeUrl: (nr) => `de link hoort te zijn https://github.com/<repository>/pull/${nr}`,
+  /** @param {string} repository @param {number} nr @returns {string} */
+  verkeerdeUrl: (repository, nr) => `de link hoort te zijn https://github.com/${repository}/pull/${nr}`,
+  /** @param {string} veld @returns {string} */
+  verkeerdType: (veld) => `het veld ${veld} heeft niet het juiste formaat; zie de beschrijving van het bestand`,
+  periodeOmgedraaid: 'het begin van de periode ligt na het einde',
   /** @param {string} waarde @returns {string} */
   onbekendeStatus: (waarde) => `de status "${waarde}" bestaat niet; kies concept, meer-info-nodig, goedgekeurd of uitgesloten`,
   buitenPeriode: 'de merge-datum valt buiten de periode van het journaal',
@@ -130,7 +147,9 @@ export const fouten = {
    * @param {{bericht: number|null, veld: string, melding: string}} f
    * @returns {string}
    */
-  regel: (f) => (f.bericht === null ? f.melding : `Bericht ${f.bericht}, veld ${f.veld}: ${f.melding}`)
+  regel: (f) => (f.bericht === null
+    ? f.melding.charAt(0).toUpperCase() + f.melding.slice(1)
+    : `Bericht ${f.bericht}, veld ${f.veld}: ${f.melding}`)
 };
 
 /** Help-paneel. */
@@ -140,15 +159,24 @@ export const help = {
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
-    { naam: 'Goedkeuren / Uitsluiten', uitleg: 'bepaal wat er wordt uitgezonden.' },
+    { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
+    { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
+    { naam: 'Uitsluiten / Weer opnemen', uitleg: 'laat een bericht bewust weg, of zet het terug op concept. Een uitgesloten bericht keur je pas goed na Weer opnemen.' },
     { naam: 'Bewerken', uitleg: 'pas kop en uitleg aan, met Opslaan of Annuleren.' },
     { naam: 'Bron openen', uitleg: 'bekijk de pull request op GitHub in een nieuw tabblad.' },
     { naam: 'Start uitzending', uitleg: 'volledig scherm, één bericht tegelijk. Volgende met de knop, pijltje rechts of vegen; Esc sluit af.' },
-    { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' }
+    { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' },
+    { naam: 'Aftellen overslaan', uitleg: 'gaat in de uitzending meteen van de aftelleader naar de titelkaart.' },
+    { naam: 'Uitzending sluiten', uitleg: 'brengt je terug naar de redactie (ook met Esc).' },
+    { naam: 'Kopieer overzicht', uitleg: 'zet op het eindscherm alle koppen, uitleg en links op je klembord.' },
+    { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
+  conceptKop: 'HET CONCEPTBESTAND',
+  conceptTekst: 'Claude maakt journaal-concept.json met de skill /journaal: per gemergde pull request een grappige kop, een zakelijke uitleg en een link naar de bron. De app controleert het bestand bij het importeren. Klopt er iets niet, dan zie je per bericht en veld wat er mis is en wordt er niets geladen.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
   publicatieTekst: 'Claude schreef de koppen en uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat dit onder elk bericht, ook in de uitzending.',
-  handleiding: 'Naar de gebruikershandleiding'
+  handleiding: 'Naar de gebruikershandleiding',
+  sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };
 
 /** Uitzending. */
@@ -161,6 +189,10 @@ export const uitzending = {
   /** @param {number} i @param {number} n @returns {string} */
   berichtVan: (i, n) => `BERICHT ${i} VAN ${n} · UIT DE WERKPLAATS`,
   bron: 'Bron:',
+  /** @param {number} nr @param {string} titel @returns {string} */
+  bronLink: (nr, titel) => `PR #${nr} · ${titel}`,
+  /** Scheiding tussen de koppen in de lopende balk. */
+  balkScheiding: '   ★   ',
   balkTag: 'JOURNAAL',
   einde: 'Einde van het journaal',
   overzichtKop: 'TOTAALOVERZICHT · OM TE KOPIËREN'

@@ -37,6 +37,7 @@ De app is een statische pagina zonder build-stap. Open `public/index.html` via e
 - [Architectuur](docs/architectuur.md): van GitHub via het conceptbestand naar de webapp
 - [Contract](docs/contract.md): het formaat van `journaal-concept.json` en de validatieregels
 - [Testen](docs/testen.md): welke tests er zijn en hoe je ze draait
+- [Aanpassingen op het plan](docs/plan-aanpassingen.md): waar we afwijken van het totaalplan en waarom
 - [CLAUDE.md](CLAUDE.md): stijlgids en bouwinstructies
 
 ## Werkafspraken
