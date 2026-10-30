@@ -30,8 +30,14 @@ function conceptMetLangeKoppen() {
 async function controleerScherm(page, scherm) {
   const breedte = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
   expect(breedte.scroll, `${scherm}: horizontaal scrollen`).toBeLessThanOrEqual(breedte.client);
+  // De uitzending is een vaste laag met overflow: hidden; te brede inhoud zou daar weggeknipt worden in plaats
+  // van te scrollen. Meet daarom ook dat geen zichtbaar element rechts buiten beeld valt.
+  const buitenBeeld = await page.evaluate(() => [...document.querySelectorAll('#uitzending:not([hidden]) .uitzending__frame *')]
+    .filter((e) => e.getClientRects().length && e.getBoundingClientRect().right > innerWidth + 1)
+    .map((e) => e.tagName + '.' + e.className));
+  expect(buitenBeeld, `${scherm}: buiten beeld`).toEqual([]);
 
-  const teKlein = await page.evaluate(() => [...document.querySelectorAll('button, a.knop')]
+  const teKlein = await page.evaluate(() => [...document.querySelectorAll('button, a.knop, [role=button], summary')]
     .filter((e) => e.offsetParent !== null && getComputedStyle(e).visibility !== 'hidden')
     .map((e) => ({ tekst: e.textContent.trim() || e.getAttribute('aria-label'), r: e.getBoundingClientRect() }))
     .filter(({ r }) => r.width < 44 || r.height < 44)
@@ -58,6 +64,22 @@ test.describe('responsive en toegankelijk', () => {
       new Set(kaarten.map((k) => Math.round(k.getBoundingClientRect().left))).size);
     expect(kolommen).toBe(KOLOMMEN[testInfo.project.name]);
     await controleerScherm(page, 'redactie');
+  });
+
+  test('Help-paneel', async ({ page }) => {
+    await page.goto('./');
+    await page.getByRole('button', { name: 'Help', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: 'Hoe werkt het?' })).toBeVisible();
+    await controleerScherm(page, 'help');
+  });
+
+  test('bewerkstand en opengeklapte uitleg bij een status', async ({ page }) => {
+    await importeer(page, 'geldig-5-berichten.json');
+    await verwachtKaarten(page, 5);
+    await page.getByRole('button', { name: 'Uitleg over de status concept' }).first().click();
+    await page.getByRole('button', { name: 'Bewerken' }).first().click();
+    await expect(page.getByRole('textbox', { name: 'Kop' })).toBeVisible();
+    await controleerScherm(page, 'bewerkstand');
   });
 
   test('foutmelding na een ongeldig bestand', async ({ page }) => {
@@ -131,5 +153,29 @@ test.describe('responsive en toegankelijk', () => {
     const animaties = await page.evaluate(() => ['.effect-flikker', '.effect-kras', '.balk__loop', '.leader__cijfer']
       .map((s) => getComputedStyle(document.querySelector(s)).animationName));
     expect(animaties).toEqual(['flikker', 'kras', 'schuif', 'pols']);
+  });
+
+  test.describe('telefoon liggend (844x390)', () => {
+    test.use({ viewport: { width: 844, height: 390 } });
+
+    test('een kop van 90 tekens past binnen beeld en boven de balk', async ({ page }, testInfo) => {
+      test.skip(testInfo.project.name !== 'mobiel', 'liggend is een telefoonmaat');
+      await importeer(page, alsBestand(conceptMetLangeKoppen()));
+      await page.getByRole('button', { name: 'Start uitzending' }).click();
+      await page.getByRole('button', { name: 'Aftellen overslaan' }).click();
+      for (let i = 0; i < 2; i += 1) {
+        await page.getByRole('button', { name: 'Volgende' }).click();
+        await expect(page.getByTestId('nieuwsframe')).toBeVisible();
+        const binnen = await page.evaluate(() => {
+          const kop = document.querySelector('.nieuwsframe__kop').getBoundingClientRect();
+          const balk = document.querySelector('.balk').getBoundingClientRect();
+          return kop.left >= 0 && kop.right <= innerWidth && kop.top >= 0 && kop.bottom <= balk.top;
+        });
+        expect(binnen, `kop van bericht ${i + 1} liggend binnen beeld`).toBe(true);
+        await controleerScherm(page, `liggend nieuwsframe ${i + 1}`);
+      }
+      await page.getByRole('button', { name: 'Volgende' }).click();
+      await controleerScherm(page, 'liggend eindscherm');
+    });
   });
 });
