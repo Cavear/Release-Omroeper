@@ -205,12 +205,15 @@ function maakActieknop(actie, tekst, extra = {}) {
 function maakActies(b) {
   const uitgesloten = b.status === 'uitgesloten';
   const uitlegId = `eerst-opnemen-${b.prNummer}`;
-  return maak('div', { class: 'kaart__acties knoppenrij' },
-    maakActieknop('goed', b.status === 'goedgekeurd' ? knoppen.terugNaarConcept : knoppen.goedkeuren,
-      uitgesloten ? { disabled: true, 'aria-describedby': uitlegId } : {}),
-    maakActieknop('uit', uitgesloten ? knoppen.weerOpnemen : knoppen.uitsluiten),
-    maakActieknop('bewerk', knoppen.bewerken, { class: 'knop knop--tekst' }),
-    maak('a', { class: 'knop knop--link', href: b.bronUrl, target: '_blank', rel: 'noopener' }, knoppen.bronOpenen, icoon('extern', true)),
+  // Zoals in het ontwerp: de statusknoppen op de eerste regel, Bewerken en Bron openen op de tweede.
+  return maak('div', { class: 'kaart__acties' },
+    maak('div', { class: 'knoppenrij' },
+      maakActieknop('goed', b.status === 'goedgekeurd' ? knoppen.terugNaarConcept : knoppen.goedkeuren,
+        uitgesloten ? { disabled: true, 'aria-describedby': uitlegId } : {}),
+      maakActieknop('uit', uitgesloten ? knoppen.weerOpnemen : knoppen.uitsluiten)),
+    maak('div', { class: 'knoppenrij' },
+      maakActieknop('bewerk', knoppen.bewerken, { class: 'knop knop--tekst' }),
+      maak('a', { class: 'knop knop--link', href: b.bronUrl, target: '_blank', rel: 'noopener' }, knoppen.bronOpenen, icoon('extern', true))),
     uitgesloten && maak('span', { id: uitlegId, class: 'visueel-verborgen' }, kaart.eerstOpnemen));
 }
 
