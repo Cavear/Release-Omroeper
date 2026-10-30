@@ -278,7 +278,7 @@ function vervang(berichten, index, wijziging) {
  * @returns {Bericht[]} een nieuwe lijst; de originele lijst blijft ongewijzigd
  */
 export function selecteerUitzending(berichten) {
-  return berichten.filter((b) => b.status === 'goedgekeurd');
+  return berichten.filter((b) => b.status !== 'uitgesloten');
 }
 
 /**
