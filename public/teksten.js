@@ -47,8 +47,10 @@ export const knoppen = {
   volgende: 'Volgende',
   aftellenOverslaan: 'Aftellen overslaan',
   uitzendingSluiten: 'Uitzending sluiten',
-  muziekUit: 'Muziek uit',
-  muziekAan: 'Muziek aan',
+  geluidUit: 'Geluid uit',
+  geluidAan: 'Geluid aan',
+  pauzeren: 'Pauzeren',
+  afspelen: 'Afspelen',
   kopieerOverzicht: 'Kopieer overzicht',
   gekopieerd: 'Gekopieerd',
   terugNaarRedactie: 'Terug naar de redactie',
@@ -155,8 +157,10 @@ export const meldingen = {
   kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
   importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.',
   exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.',
-  muziekUit: 'De muziek staat uit.',
-  muziekAan: 'De muziek staat aan.'
+  geluidUit: 'Het geluid staat uit; de film loopt door zonder muziek en stem.',
+  geluidAan: 'Het geluid staat aan.',
+  gepauzeerd: 'Het journaal staat stil. Kies Afspelen om verder te gaan.',
+  afspelen: 'Het journaal speelt verder.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
@@ -208,11 +212,13 @@ export const help = {
     { naam: 'Uitsluiten / Weer opnemen', uitleg: 'laat een bericht bewust weg, of zet het terug op concept. Een uitgesloten bericht keur je pas goed na Weer opnemen.' },
     { naam: 'Bewerken', uitleg: 'pas kop en uitleg aan, met Opslaan of Annuleren.' },
     { naam: 'Bron openen', uitleg: 'bekijk de pull request op GitHub in een nieuw tabblad.' },
-    { naam: 'Start uitzending', uitleg: 'volledig scherm, één bericht tegelijk. Volgende met de knop, pijltje rechts of vegen; Esc sluit af.' },
+    { naam: 'Start uitzending', uitleg: 'speelt het journaal op volledig scherm af als een filmpje, met muziek en een omroeper die elk bericht voorleest. Esc sluit af.' },
+    { naam: 'Pauzeren / Afspelen', uitleg: 'zet de film in de uitzending stil of laat hem verder lopen (sneltoets P).' },
+    { naam: 'Volgende', uitleg: 'springt in de uitzending meteen naar het volgende bericht (ook pijltje rechts of vegen).' },
     { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' },
     { naam: 'Aftellen overslaan', uitleg: 'gaat in de uitzending meteen van de aftelleader naar de titelkaart.' },
     { naam: 'Uitzending sluiten', uitleg: 'brengt je terug naar de redactie (ook met Esc).' },
-    { naam: 'Muziek uit / Muziek aan', uitleg: 'zet de journaalmuziek in de uitzending uit of weer aan (sneltoets M).' },
+    { naam: 'Geluid uit / Geluid aan', uitleg: 'zet muziek en omroeper in de uitzending uit of weer aan (sneltoets M).' },
     { naam: 'Kopieer overzicht', uitleg: 'zet op het eindscherm alle koppen, uitleg en links op je klembord.' },
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
@@ -241,4 +247,17 @@ export const uitzending = {
   balkTag: 'JOURNAAL',
   einde: 'Einde van het journaal',
   overzichtKop: 'TOTAALOVERZICHT · OM TE KOPIËREN'
+};
+
+/**
+ * Wat de omroeper voorleest. De eerste zin klinkt het plechtigst. Bij een nieuwsframe leest hij de kop en de uitleg.
+ */
+export const voorlezen = {
+  /** @param {string} datum @param {number} n @returns {string[]} */
+  titel: (datum, n) => [
+    'Het Release-Bioscoopjournaal.',
+    'Uit de werkplaats.',
+    `De release van ${datum}, in ${n} ${n === 1 ? 'bericht' : 'berichten'}.`,
+  ],
+  einde: ['Dat was het Release-Bioscoopjournaal.', 'Tot de volgende release!']
 };
