@@ -64,7 +64,7 @@ In `testbewijs/`: per stap screenshots en rapporten, onder andere `stap-3.4` (re
 
 ## Smoketest na een upload
 
-Bij een push naar `test` zet de CI de app op STRATO (map `app1-test`) en draait daarna vanzelf de smoketest. Los draaien kan ook:
+Bij een push naar `test` zet de CI de app op STRATO (map `App1-test`) en draait daarna vanzelf de smoketest. Los draaien kan ook:
 
 - **Lokaal:** `npm run test:smoke` (standaard `http://app1-test.caitlinveenendaal.nl/`), of met een andere URL: `BASE_URL=<url> npm run test:smoke`.
 - **In GitHub:** Actions → *ci-cd* → *Run workflow*, eventueel met een andere URL.
