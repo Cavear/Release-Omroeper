@@ -29,7 +29,7 @@ Elke test draait drie keer, via de projecten in `playwright.config.js`: **mobiel
 
 | Bestand | Wat het test |
 |---|---|
-| `import.spec.js` | Geldig concept → 5 kaarten; `fout-6-berichten` en `fout-geen-json` → foutmelding en niets geladen; een fout bestand laat bestaand werk staan |
+| `import.spec.js` | Geldig concept → 5 kaarten; `fout-21-berichten` en `fout-geen-json` → foutmelding en niets geladen; een fout bestand laat bestaand werk staan |
 | `uitzending.spec.js` | Kop aanpassen, goedkeuren, uitsluiten → alleen het goedgekeurde bericht met de nieuwe kop in de uitzending; bronlink, Volgende (knop en pijltje rechts), totaaloverzicht, Kopieer overzicht, Esc, aftelleader, Start uit zonder goedkeuring |
 | `responsive.spec.js` | Per scherm (lege staat, redactie, bewerkstand, Help, foutmelding, leader, titelkaart, nieuwsframes, eindscherm): geen horizontaal scrollen, knoppen ≥ 44×44, **axe** zonder serious/critical; kolommen 1/2/3; langste kop en kop van 90 tekens binnen beeld (ook liggend 844×390); vegen op mobiel; animaties uit bij reduced motion |
 | `uitleg.spec.js` | Lege staat met 3 stappen; Help met knop en `?`, Escape sluit; uitleg bij elke status met toetsenbord en tik; elke knop en elk veld heeft een naam (ook in Help en uitzending); foutmelding noemt bericht, veld en oplossing; handleidinglink |
@@ -46,11 +46,11 @@ In `testdata/`. `voorbeeld.json` bevat 3 geldige berichten en is met de hand gem
 
 | Bestand | Wat erin zit |
 |---|---|
-| `geldig-5-berichten.json` | 5 geldige berichten (het maximum) |
+| `geldig-5-berichten.json` | 5 geldige berichten |
 | `geldig-met-meer-info.json` | 3 geldige berichten, waarvan één `meer-info-nodig` en één `goedgekeurd` |
 | `fout-ontbrekend-veld.json` | bericht 2 heeft geen `kop` |
 | `fout-verkeerde-url.json` | bericht 3 linkt naar een ander PR-nummer |
-| `fout-6-berichten.json` | 6 berichten |
+| `fout-21-berichten.json` | 21 berichten (één meer dan het maximum) |
 | `fout-dubbel-prnummer.json` | bericht 3 heeft hetzelfde PR-nummer als bericht 1 |
 | `fout-buiten-periode.json` | bericht 2 is gemergd na het einde van de periode |
 | `fout-geen-json.txt` | gewone tekst, geen JSON |

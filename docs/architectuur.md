@@ -4,7 +4,7 @@
 
 ```
 GitHub (gemergde PR's)
-   ├── publieke REST API ── GitHub ophalen (max. 5 PR's; journaalkop uit de titel, beschrijving)
+   ├── publieke REST API ── GitHub ophalen (max. 20 PR's, de meest recente; journaalkop uit de titel, beschrijving)
    │                         └── concept of meer-info-nodig tot de redactie het controleert
    └── GitHub MCP-server "github", alleen lezen
          ▼
@@ -19,7 +19,7 @@ Webapp public/: redactie  ──  Goedkeuren / Uitsluiten / Bewerken
 Uitzending: leader → titelkaart → één scherm per goedgekeurd bericht → eindscherm (Kopieer overzicht)
 ```
 
-1. **Direct ophalen.** De redactietafel kan via de publieke GitHub REST API gemergde PR's binnen een gekozen periode ophalen. Dit werkt zonder token voor openbare repositories, maximaal vijf resultaten per journaal. De app maakt van de PR-titel een journaalkop (vaste opener per soort wijziging uit `teksten.js` plus het onderwerp uit de titel), neemt de eerste alinea van de beschrijving over en zet elk bericht op *concept*, of op *meer-info-nodig* bij een vage titel of zonder beschrijving; er worden geen samenvattingen of voordelen verzonnen.
+1. **Direct ophalen.** De redactietafel kan via de publieke GitHub REST API gemergde PR's binnen een gekozen periode ophalen. Dit werkt zonder token voor openbare repositories, maximaal twintig berichten per journaal; zijn er meer gemergde PR's, dan de twintig meest recente. Titel, beschrijving en merge-moment komen uit de zoekresultaten, zodat één ophaalactie maar een paar verzoeken kost (zonder token staat GitHub 60 per uur toe). De app maakt van de PR-titel een journaalkop (vaste opener per soort wijziging uit `teksten.js` plus het onderwerp uit de titel), neemt de eerste alinea van de beschrijving over en zet elk bericht op *concept*, of op *meer-info-nodig* bij een vage titel of zonder beschrijving; er worden geen samenvattingen of voordelen verzonnen.
 2. **GitHub MCP (read-only).** Claude Code haalt met de skill `/journaal` gemergde PR's op en schrijft per PR een licht komische kop en zakelijke uitleg in `journaal-concept.json`. Vage PR's krijgen de status *meer-info-nodig*. De server `github` draait alleen-lezen. `github-oefenrepo` is uitsluitend voor testdata in `Cavear/vibe_webshop` en wordt nooit voor het journaal gebruikt.
 3. **Conceptbestand.** De MCP-route levert het contractbestand op; in de app kun je dat bestand handmatig importeren. Beide routes komen uit op dezelfde validatie en redactiestroom.
 4. **Webapp.** Een statische pagina zonder framework of build-stap. De redactie controleert en bewerkt berichten, keurt ze goed of sluit ze uit, en zendt daarna uit. Het nagekeken journaal kun je exporteren en later opnieuw importeren.

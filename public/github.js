@@ -8,7 +8,7 @@ import { github as teksten } from './teksten.js';
 /** Een foutcode die de UI vertaalt naar een zichtbare melding. */
 export class GitHubFout extends Error {
   /**
-   * @param {'repository'|'periode'|'teVeel'|'netwerk'|'privé'|'limiet'|'onvolledig'|'api'} code
+   * @param {'repository'|'periode'|'netwerk'|'privé'|'limiet'|'onvolledig'|'api'} code
    */
   constructor(code) {
     super(code);
@@ -154,15 +154,56 @@ async function haalJson(url, fetcher) {
   }
 }
 
+/** Resultaten per pagina van de zoek-API (het maximum van GitHub). */
+const PER_PAGINA = 100;
+/** De zoek-API geeft hooguit 1000 resultaten, dus 10 pagina’s. */
+const MAX_PAGINAS = 10;
+
 /**
- * Haalt maximaal vijf gemergde PR’s op en maakt er een ongekeurd journaalconcept van.
- * Bij meer resultaten wordt niets ingeladen.
+ * Het merge-moment van een zoekresultaat.
+ * @param {any} item
+ * @returns {string | null}
+ */
+function mergeMoment(item) {
+  const moment = item?.pull_request?.merged_at;
+  return typeof moment === 'string' ? moment : null;
+}
+
+/**
+ * Haalt alle zoekresultaten op, pagina voor pagina (hooguit 1000).
+ * @param {URLSearchParams} zoek de zoekvraag zonder pagina
+ * @param {(url: string, opties?: RequestInit) => Promise<Response>} fetcher
+ * @returns {Promise<{totaal: number, items: any[]}>}
+ */
+async function zoekAlles(zoek, fetcher) {
+  const items = [];
+  let totaal = 0;
+  for (let pagina = 1; pagina <= MAX_PAGINAS; pagina += 1) {
+    zoek.set('page', String(pagina));
+    const resultaat = await haalJson(`https://api.github.com/search/issues?${zoek}`, fetcher);
+    if (!resultaat || !Array.isArray(resultaat.items) || !Number.isInteger(resultaat.total_count)
+      || typeof resultaat.incomplete_results !== 'boolean') {
+      throw new GitHubFout('api');
+    }
+    if (resultaat.incomplete_results) throw new GitHubFout('onvolledig');
+    totaal = resultaat.total_count;
+    items.push(...resultaat.items);
+    if (resultaat.items.length < PER_PAGINA || items.length >= totaal) break;
+  }
+  return { totaal, items };
+}
+
+/**
+ * Haalt de gemergde PR’s uit een periode op en maakt van de nieuwste MAX_BERICHTEN (20) een ongekeurd journaalconcept.
+ * Zijn er meer, dan vallen de oudste af; `totaal` zegt hoeveel er waren.
+ * Alles komt uit de zoekresultaten (titel, beschrijving, merge-moment), zodat één ophaalactie maar een paar
+ * verzoeken kost; zonder token staat GitHub er maar 60 per uur toe.
  * Kop en uitleg zijn brongegevens; er worden geen samenvattingen of voordelen verzonnen.
  * @param {string} repository GitHub-repository in de vorm owner/repo
  * @param {string} van Begindatum inclusief
  * @param {string} tot Einddatum inclusief
  * @param {(url: string, opties?: RequestInit) => Promise<Response>} [fetcher]
- * @returns {Promise<{repository: string, periode: {van: string, tot: string}, gegenereerdOp: string, berichten: object[]}>}
+ * @returns {Promise<{concept: {repository: string, periode: {van: string, tot: string}, gegenereerdOp: string, berichten: object[]}, totaal: number}>}
  */
 export async function haalGitHubConcept(repository, van, tot, fetcher = globalThis.fetch) {
   if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})\/[A-Za-z0-9](?:[A-Za-z0-9._-]{0,99})$/.test(repository)) {
@@ -170,51 +211,48 @@ export async function haalGitHubConcept(repository, van, tot, fetcher = globalTh
   }
   if (!isDatum(van) || !isDatum(tot) || van > tot) throw new GitHubFout('periode');
 
-  const [eigenaar, naam] = repository.split('/');
   const begin = lokaalTijdstip(van, '00:00:00');
   const eind = lokaalTijdstip(tot, '23:59:59');
   const zoek = new URLSearchParams({
     q: `repo:${repository} is:pr is:merged merged:${begin}..${eind}`,
-    per_page: '100',
+    sort: 'updated',
+    order: 'desc',
+    per_page: String(PER_PAGINA),
   });
-  const resultaat = await haalJson(`https://api.github.com/search/issues?${zoek}`, fetcher);
-  if (!resultaat || !Array.isArray(resultaat.items) || !Number.isInteger(resultaat.total_count)
-    || typeof resultaat.incomplete_results !== 'boolean') {
-    throw new GitHubFout('api');
-  }
-  if (resultaat.incomplete_results) throw new GitHubFout('onvolledig');
-  if (resultaat.total_count > MAX_BERICHTEN || resultaat.items.length !== resultaat.total_count) {
-    throw new GitHubFout('teVeel');
-  }
+  const { totaal, items } = await zoekAlles(zoek, fetcher);
 
-  const details = await Promise.all(resultaat.items.map((item) => {
-    if (!Number.isInteger(item.number) || item.number < 1) throw new GitHubFout('api');
-    const pad = [eigenaar, naam, 'pulls', String(item.number)].map(encodeURIComponent).join('/');
-    return haalJson(`https://api.github.com/repos/${pad}`, fetcher);
-  }));
-
-  const berichten = details.map((pr) => {
-    if (!pr || pr.merged_at === null || typeof pr.merged_at !== 'string' || typeof pr.title !== 'string') {
+  for (const item of items) {
+    if (!Number.isInteger(item?.number) || item.number < 1 || typeof item.title !== 'string' || mergeMoment(item) === null) {
       throw new GitHubFout('api');
     }
+  }
+  // De nieuwste eerst; bij meer dan MAX_BERICHTEN vallen de oudste af.
+  const nieuwste = [...items]
+    .sort((a, b) => Date.parse(mergeMoment(b)) - Date.parse(mergeMoment(a)))
+    .slice(0, MAX_BERICHTEN);
+
+  const berichten = nieuwste.map((pr) => {
     const { uitleg, volledig } = maakUitleg(pr.body);
     const { kop, nakijken } = maakKop(pr.title, pr.number);
     return {
       prNummer: pr.number,
       bronUrl: `https://github.com/${repository}/pull/${pr.number}`,
       origineleTitel: pr.title,
-      gemergdOp: pr.merged_at,
+      gemergdOp: mergeMoment(pr),
       kop,
       uitleg,
       // Zonder beschrijving, of met een vage of ingekorte titel, valt de kaart op, zodat de redactie hem nakijkt.
       status: volledig && !nakijken ? 'concept' : 'meer-info-nodig',
     };
-  }).sort((a, b) => Date.parse(b.gemergdOp) - Date.parse(a.gemergdOp));
+  });
 
   return {
-    repository,
-    periode: { van: begin, tot: eind },
-    gegenereerdOp: new Date().toISOString(),
-    berichten,
+    concept: {
+      repository,
+      periode: { van: begin, tot: eind },
+      gegenereerdOp: new Date().toISOString(),
+      berichten,
+    },
+    totaal,
   };
 }
