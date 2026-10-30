@@ -288,10 +288,11 @@ button, input, textarea { font: inherit; color: inherit; }
   height: 100dvh;
 }
 .uitzending__frame { position: relative; flex: 1 1 auto; min-height: 0; display: flex; }
-.uitzending__sluit {
+.uitzending__bediening {
   position: absolute; z-index: 6; top: clamp(8px, 2vh, 20px); right: clamp(8px, 2vw, 20px);
-  background: rgba(20, 18, 16, .6); color: var(--ink);
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--space-2);
 }
+.uitzending__sluit { background: rgba(20, 18, 16, .6); color: var(--ink); }
 
 .leader { flex: 1; display: grid; place-items: center; position: relative; }
 .leader__wijzer { position: absolute; width: min(78vh, 78vw); height: min(78vh, 78vw); color: var(--sepia); }

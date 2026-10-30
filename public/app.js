@@ -6,11 +6,13 @@
  * Stap 3.3: teller met Start uitzending; de uitzending met nieuwsframes, Volgende, en het eindscherm.
  * Stap 3.5: aftelleader 3-2-1, titelkaart en de effectlagen (korrel, vignet, flikkering, krassen) in index.html.
  * Stap 3.8: Help-paneel (knop Help en sneltoets ?) en een uitleg-icoon bij elk statuslabel.
+ * Achtergrondmuziek in de uitzending (muziek.js), met de knop Muziek uit/aan en sneltoets M.
  * @module app
  */
 import {
   valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, selecteerUitzending, maakTotaaloverzicht, PUBLICATIESTATUS,
 } from './logic.js';
+import { kanMuziek, startMuziek, stopMuziek, zetMuziek, muziekStaatAan } from './muziek.js';
 import {
   algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help,
 } from './teksten.js';
@@ -80,6 +82,8 @@ const ICONEN = {
   start: '<path d="M7 5l12 7-12 7z"/>',
   volgende: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   sluiten: '<path d="M6 6l12 12M18 6L6 18"/>',
+  muziekAan: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>',
+  muziekUit: '<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/>',
   kopieer: '<rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17v.01"/>',
 };
@@ -498,12 +502,20 @@ function toonTeller() {
   el.startknop.disabled = goed === 0;
 }
 
-/** Bouwt de vaste delen van de uitzending: de sluitknop en de lopende balk met Volgende (eenmalig). */
+/** Bouwt de vaste delen van de uitzending: de muziekknop, de sluitknop en de lopende balk met Volgende (eenmalig). */
 function bouwUitzending() {
   const sluit = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'Escape' },
     icoon('sluiten', true), knoppen.uitzendingSluiten);
   sluit.addEventListener('click', sluitUitzending);
-  el.uitzending.prepend(sluit);
+  const bediening = maak('div', { class: 'uitzending__bediening' }, sluit);
+  // Zonder Web Audio API geen muziek, en dan ook geen knop die niets doet.
+  if (kanMuziek()) {
+    el.muziekknop = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'M' });
+    el.muziekknop.addEventListener('click', wisselMuziek);
+    toonMuziekknop();
+    bediening.prepend(el.muziekknop);
+  }
+  el.uitzending.prepend(bediening);
 
   el.balkLoop = maak('div', { class: 'balk__loop', 'aria-hidden': 'true' });
   el.volgendeknop = maak('button', { type: 'button', class: 'knop balk__volgende', 'aria-keyshortcuts': 'ArrowRight' },
@@ -517,7 +529,10 @@ function bouwUitzending() {
   document.addEventListener('keydown', (event) => {
     if (el.uitzending.hidden) return;
     if (event.key === 'Escape') { event.preventDefault(); sluitUitzending(); }
-    else if (event.key === 'ArrowRight' && !event.altKey && !event.ctrlKey && !event.metaKey
+    else if ((event.key === 'm' || event.key === 'M') && el.muziekknop && !event.altKey && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      wisselMuziek();
+    } else if (event.key === 'ArrowRight' && !event.altKey && !event.ctrlKey && !event.metaKey
       && uz.stap < uz.berichten.length) { event.preventDefault(); volgende(); }
   });
 
@@ -556,13 +571,30 @@ function startUitzending() {
   el.redactie.inert = true;
   el.uitzending.hidden = false;
   el.uitzending.requestFullscreen?.().catch(() => {});
+  // Start uitzending is een klik, dus hier mag de browser geluid afspelen.
+  startMuziek();
   toonUitzending();
+}
+
+/** Zet de muziek uit of aan en meldt dat; de keuze geldt ook voor de volgende uitzending. */
+function wisselMuziek() {
+  const aan = !muziekStaatAan();
+  zetMuziek(aan);
+  toonMuziekknop();
+  el.melding.textContent = aan ? meldingen.muziekAan : meldingen.muziekUit;
+}
+
+/** Zet tekst en icoon van de muziekknop: Muziek uit als hij speelt, Muziek aan als hij uit staat. */
+function toonMuziekknop() {
+  const aan = muziekStaatAan();
+  el.muziekknop.replaceChildren(icoon(aan ? 'muziekAan' : 'muziekUit', true), aan ? knoppen.muziekUit : knoppen.muziekAan);
 }
 
 /** Sluit de uitzending en zet de focus terug op Start uitzending. */
 function sluitUitzending() {
   if (el.uitzending.hidden) return;
   stopLeader();
+  stopMuziek();
   // Een melding uit de uitzending hoort niet meer in de redactie.
   el.melding.textContent = '';
   el.uitzending.hidden = true;

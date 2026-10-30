@@ -40,6 +40,8 @@ export const knoppen = {
   volgende: 'Volgende',
   aftellenOverslaan: 'Aftellen overslaan',
   uitzendingSluiten: 'Uitzending sluiten',
+  muziekUit: 'Muziek uit',
+  muziekAan: 'Muziek aan',
   kopieerOverzicht: 'Kopieer overzicht',
   gekopieerd: 'Gekopieerd',
   terugNaarRedactie: 'Terug naar de redactie',
@@ -113,7 +115,9 @@ export const meldingen = {
   gekopieerd: 'Het totaaloverzicht staat op je klembord.',
   kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
   importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.',
-  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.'
+  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.',
+  muziekUit: 'De muziek staat uit.',
+  muziekAan: 'De muziek staat aan.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
@@ -168,6 +172,7 @@ export const help = {
     { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' },
     { naam: 'Aftellen overslaan', uitleg: 'gaat in de uitzending meteen van de aftelleader naar de titelkaart.' },
     { naam: 'Uitzending sluiten', uitleg: 'brengt je terug naar de redactie (ook met Esc).' },
+    { naam: 'Muziek uit / Muziek aan', uitleg: 'zet de journaalmuziek in de uitzending uit of weer aan (sneltoets M).' },
     { naam: 'Kopieer overzicht', uitleg: 'zet op het eindscherm alle koppen, uitleg en links op je klembord.' },
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],

@@ -75,7 +75,7 @@ Kies *Start uitzending* (kan pas als er minstens één bericht is goedgekeurd). 
 |---|---|
 | ![Een bericht in de uitzending](../testbewijs/stap-5.3/07-uitzending-bericht-1-desktop.jpg) | ![Het eindscherm met het totaaloverzicht en Kopieer overzicht](../testbewijs/stap-5.3/09-uitzending-eindscherm-desktop.jpg) |
 
-*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; zonder HTTPS gebruikt de app een oudere kopieermethode, en lukt ook dat niet, dan selecteert de app de tekst zodat je hem zelf kopieert.
+*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Tijdens de uitzending speelt zachte journaalmuziek; *Muziek uit* (of de toets M) zet hem uit, en die keuze blijft gelden tot je de pagina ververst. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; zonder HTTPS gebruikt de app een oudere kopieermethode, en lukt ook dat niet, dan selecteert de app de tekst zodat je hem zelf kopieert.
 
 ## 5. Het journaal exporteren
 
