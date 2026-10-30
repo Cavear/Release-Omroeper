@@ -4,31 +4,33 @@
 
 ```
 GitHub (gemergde PR's)
-   │  GitHub MCP-server "github", alleen lezen
-   ▼
-Claude Code, skill /journaal  ── schrijft per PR een kop, uitleg, voor wie en status
-   │
-   ▼
-journaal-concept.json          ← het contract, zie contract.md
-   │  Concept importeren (in de browser, valideerConcept)
-   ▼
+   ├── publieke REST API ── GitHub ophalen (max. 5 PR's; titel en beschrijving)
+   │                         └── concept of meer-info-nodig tot de redactie het controleert
+   └── GitHub MCP-server "github", alleen lezen
+         ▼
+      Claude Code, skill /journaal ── schrijft kop, uitleg, voor wie en status
+         ▼
+      journaal-concept.json        ← het contract, zie contract.md
+         │ Concept importeren (in de browser, valideerConcept)
+         ▼
 Webapp public/: redactie  ──  Goedkeuren / Uitsluiten / Bewerken
    │                     └──  Journaal exporteren → journaal-nagekeken.json (zelfde contract)
    ▼
 Uitzending: leader → titelkaart → één scherm per goedgekeurd bericht → eindscherm (Kopieer overzicht)
 ```
 
-1. **GitHub MCP (read-only).** Claude Code haalt met de skill `/journaal` de gemergde PR's van een repository binnen een periode op. De server `github` draait in de alleen-lezenmodus. De tweede server, `github-oefenrepo`, mag alleen schrijven in de oefenrepo `Cavear/vibe_webshop` (testdata, fase 4) en wordt nooit voor het journaal gebruikt.
-2. **Conceptbestand.** Claude schrijft per PR een licht komische kop en een zakelijke uitleg in `journaal-concept.json`. Vage PR's krijgen de status *meer-info-nodig*. Dat bestand is de enige overdracht tussen de MCP-route en de app.
-3. **Webapp.** Een statische pagina zonder framework en zonder build-stap. Je importeert het bestand in de browser, kijkt het na en zendt het uit. Het nagekeken journaal kun je exporteren en later opnieuw importeren.
+1. **Direct ophalen.** De redactietafel kan via de publieke GitHub REST API gemergde PR's binnen een gekozen periode ophalen. Dit werkt zonder token voor openbare repositories, maximaal vijf resultaten per journaal. De app neemt de PR-titel en de eerste alinea van de beschrijving over en zet elk bericht op *concept*, of op *meer-info-nodig* zonder beschrijving; er worden geen samenvattingen of voordelen verzonnen.
+2. **GitHub MCP (read-only).** Claude Code haalt met de skill `/journaal` gemergde PR's op en schrijft per PR een licht komische kop en zakelijke uitleg in `journaal-concept.json`. Vage PR's krijgen de status *meer-info-nodig*. De server `github` draait alleen-lezen. `github-oefenrepo` is uitsluitend voor testdata in `Cavear/vibe_webshop` en wordt nooit voor het journaal gebruikt.
+3. **Conceptbestand.** De MCP-route levert het contractbestand op; in de app kun je dat bestand handmatig importeren. Beide routes komen uit op dezelfde validatie en redactiestroom.
+4. **Webapp.** Een statische pagina zonder framework of build-stap. De redactie controleert en bewerkt berichten, keurt ze goed of sluit ze uit, en zendt daarna uit. Het nagekeken journaal kun je exporteren en later opnieuw importeren.
 
 Voorbeelden van de hele route staan in [`journaal/`](../journaal/): de oefenrepo en de eigen release, elk met een verantwoording per PR.
 
 ## Waarom de site geen token krijgt
 
-- De app praat nooit zelf met GitHub. Alle gegevens komen uit het bestand dat je zelf importeert.
-- Er staat dus geen token in de code, in de browser of op de server. Een token op een publieke site kan iedereen uitlezen.
-- Het leestoken (`GITHUB_TOKEN_READ`) staat alleen als omgevingsvariabele op de laptop van wie het journaal maakt.
+- De directe koppeling gebruikt alleen de publieke GitHub API en verstuurt geen token. Privé-repositories worden niet ondersteund in de browser.
+- De MCP-route gebruikt het leestoken (`GITHUB_TOKEN_READ`) alleen als omgevingsvariabele op de laptop van wie het journaal maakt; privédata blijft via die route en een handmatig conceptbestand lopen.
+- Er staat geen token in de code, in de browser of op de server. Een token op een publieke site kan iedereen uitlezen.
 - Zo kan de site ook niets per ongeluk wijzigen in een repository.
 
 ## Onderdelen van de app
@@ -38,6 +40,7 @@ Voorbeelden van de hele route staan in [`journaal/`](../journaal/): de oefenrepo
 | `public/index.html` | De pagina, met de secties redactie en uitzending en de effectlagen |
 | `public/style.css` | Tokens en componenten uit het Design System, plus uitbreidingen onderaan |
 | `public/teksten.js` | Alle zichtbare teksten, ook de uitleg en de foutmeldingen |
+| `public/github.js` | Alleen-lezen ophalen en omzetten van PR-metadata uit openbare GitHub-repositories |
 | `public/logic.js` | Pure functies zonder DOM: `valideerConcept`, `selecteerUitzending`, `bewerkBericht`, `wijzigStatus`, `maakTotaaloverzicht`, `exporteerJournaal` |
 | `public/app.js` | DOM, events en weergave: import, kaarten, Help, uitzending |
 | `public/handleiding.html` | De gebruikershandleiding als pagina (gaat mee naar de server) |

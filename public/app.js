@@ -13,7 +13,9 @@ import {
 } from './logic.js';
 import {
   algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help,
+  github as githubTeksten,
 } from './teksten.js';
+import { GitHubFout, haalGitHubConcept } from './github.js';
 
 /** Minimale horizontale veegafstand (px) voordat vegen naar links als Volgende telt. */
 const VEEG_MIN = 50;
@@ -56,6 +58,7 @@ const el = {
   frame: document.getElementById('uitzending-frame'),
   balk: document.getElementById('balk'),
   help: document.getElementById('help'),
+  github: document.getElementById('github-dialoog'),
 };
 
 /**
@@ -138,6 +141,14 @@ function maakImportknop(primair) {
   return knop;
 }
 
+/** Maakt een knop die het GitHub-formulier opent. */
+function maakGitHubknop() {
+  const knop = maak('button', { type: 'button', class: 'knop', 'data-github': true, 'aria-haspopup': 'dialog' },
+    icoon('importeren'), knoppen.githubOphalen);
+  knop.addEventListener('click', openGitHubDialoog);
+  return knop;
+}
+
 /**
  * Zet een importknop in de gewone stand of in de laadstand.
  * @param {HTMLButtonElement} knop
@@ -158,7 +169,7 @@ function bouwVasteDelen() {
   el.exportknop.addEventListener('click', exporteer);
   el.helpknop = maak('button', { type: 'button', class: 'knop', 'aria-keyshortcuts': '?', 'aria-haspopup': 'dialog' }, icoon('help'), knoppen.help);
   el.helpknop.addEventListener('click', openHelp);
-  el.kopknoppen.append(el.helpknop, maakImportknop(false), el.exportknop);
+  el.kopknoppen.append(el.helpknop, maakGitHubknop(), maakImportknop(false), el.exportknop);
 
   el.publicatie.append(icoon('info'), maak('span', {}, maak('strong', {}, `${algemeen.publicatiestatus}.`), ` ${algemeen.publicatieUitleg}`));
 
@@ -169,8 +180,107 @@ function bouwVasteDelen() {
       maak('p', {}, leeg.intro)),
     maak('ol', { class: 'stappen' }, ...leeg.stappen.map((stap, i) =>
       maak('li', {}, maak('span', { class: 'stappen__nr', 'aria-hidden': 'true' }, String(i + 1)), maak('strong', {}, stap.titel), maak('span', {}, stap.tekst)))),
+    maakGitHubknop(),
     maakImportknop(true),
     maak('a', { href: algemeen.handleidingUrl, target: '_blank', rel: 'noopener' }, algemeen.handleidingLink));
+}
+
+/**
+ * Formatteert een lokale datum voor een date-input.
+ * @param {number} [dagenTerug] Aantal dagen vóór vandaag
+ * @returns {string} Datum als JJJJ-MM-DD
+ */
+function lokaleDatum(dagenTerug = 0) {
+  const datum = new Date();
+  datum.setDate(datum.getDate() - dagenTerug);
+  return `${datum.getFullYear()}-${String(datum.getMonth() + 1).padStart(2, '0')}-${String(datum.getDate()).padStart(2, '0')}`;
+}
+
+/** Bouwt het formulier voor het ophalen van PR’s uit een publieke GitHub-repository. */
+function bouwGitHubDialoog() {
+  const repository = maak('input', {
+    id: 'github-repository', type: 'text', required: true, autocomplete: 'off',
+    placeholder: githubTeksten.repositoryVoorbeeld,
+  });
+  const van = maak('input', { id: 'github-van', type: 'date', required: true, value: lokaleDatum(7) });
+  const tot = maak('input', { id: 'github-tot', type: 'date', required: true, value: lokaleDatum() });
+  const fout = maak('p', { id: 'github-fout', class: 'veld__fout', role: 'alert', tabindex: '-1', hidden: true });
+  const ophalen = maak('button', { type: 'submit', class: 'knop knop--primair knop--groot' }, githubTeksten.ophalen);
+  const annuleren = maak('button', { type: 'button', class: 'knop knop--groot' }, githubTeksten.annuleren);
+  const sluiten = maak('button', { type: 'button', class: 'knop', 'aria-label': knoppen.sluiten }, icoon('sluiten'));
+  const formulier = maak('form', { class: 'help__inhoud', id: 'github-formulier' },
+    maak('div', { class: 'help__kop' }, maak('h2', { id: 'github-kop' }, githubTeksten.kop), sluiten),
+    maak('p', {}, githubTeksten.intro),
+    maak('div', { class: 'veld' }, maak('label', { for: 'github-repository' }, githubTeksten.repositoryLabel), repository),
+    maak('div', { class: 'veld' }, maak('label', { for: 'github-van' }, githubTeksten.vanLabel), van),
+    maak('div', { class: 'veld' }, maak('label', { for: 'github-tot' }, githubTeksten.totLabel), tot),
+    fout,
+    maak('div', { class: 'knoppenrij' }, ophalen, annuleren));
+  sluiten.addEventListener('click', () => el.github.close());
+  annuleren.addEventListener('click', () => el.github.close());
+  formulier.addEventListener('submit', (event) => {
+    event.preventDefault();
+    haalGitHubOp(repository.value.trim(), van.value, tot.value, formulier, ophalen, fout);
+  });
+  el.github.replaceChildren(formulier);
+  Object.assign(el, { githubRepository: repository, githubVan: van, githubTot: tot, githubFout: fout });
+}
+
+/** Opent het formulier en herstelt de laatst gebruikte publieke repository. */
+function openGitHubDialoog() {
+  try { el.githubRepository.value = localStorage.getItem('release-omroeper.repository') || ''; } catch { /* Opslag is optioneel. */ }
+  el.githubFout.hidden = true;
+  el.github.showModal();
+  el.githubRepository.focus();
+}
+
+/**
+ * Wisselt de ophaalknop tussen de gewone en laadstand.
+ * @param {HTMLButtonElement} knop De knop Pull requests ophalen
+ * @param {boolean} bezig true tijdens het ophalen
+ */
+function zetGitHubknop(knop, bezig) {
+  knop.disabled = bezig;
+  if (bezig) knop.setAttribute('aria-busy', 'true'); else knop.removeAttribute('aria-busy');
+  knop.replaceChildren(bezig ? maak('span', { class: 'spinner', 'aria-hidden': 'true' }) : icoon('importeren'),
+    bezig ? githubTeksten.bezig : githubTeksten.ophalen);
+}
+
+/**
+ * Haalt PR’s op, valideert het concept en laat bestaand redactiewerk intact bij een fout.
+ * Fouten van GitHub blijven in de dialoog staan; daarna sluit de dialoog, zodat een
+ * validatiefout (#fout) of melding (#melding) zichtbaar is.
+ * @param {string} repository owner/repo
+ * @param {string} van Begindatum (JJJJ-MM-DD)
+ * @param {string} tot Einddatum (JJJJ-MM-DD)
+ * @param {HTMLFormElement} formulier
+ * @param {HTMLButtonElement} knop
+ * @param {HTMLElement} fout Foutregel in de dialoog
+ * @returns {Promise<void>}
+ */
+async function haalGitHubOp(repository, van, tot, formulier, knop, fout) {
+  fout.hidden = true;
+  formulier.setAttribute('aria-busy', 'true');
+  formulier.querySelectorAll('input, button').forEach((element) => { element.disabled = true; });
+  zetGitHubknop(knop, true);
+  try {
+    const concept = await haalGitHubConcept(repository, van, tot);
+    // Dialoog tijdens het ophalen gesloten: het resultaat niet meer laden.
+    if (!el.github.open) return;
+    el.github.close();
+    if (laadConcept(concept, githubTeksten.bron, githubTeksten.opgehaald, githubTeksten.foutkaart)) {
+      try { localStorage.setItem('release-omroeper.repository', repository); } catch { /* Opslag is optioneel. */ }
+    }
+  } catch (error) {
+    const code = error instanceof GitHubFout ? error.code : 'api';
+    fout.textContent = githubTeksten.fouten[code] || githubTeksten.fouten.api;
+    fout.hidden = false;
+    fout.focus();
+  } finally {
+    formulier.removeAttribute('aria-busy');
+    formulier.querySelectorAll('input, button').forEach((element) => { element.disabled = false; });
+    zetGitHubknop(knop, false);
+  }
 }
 
 /**
@@ -274,7 +384,7 @@ function maakKaart(b) {
     // In de bewerkstand blijft de kop als verborgen naam van de kaart bestaan.
     maak('h3', { class: bewerkstand ? 'visueel-verborgen' : 'kaart__kop', id: kopId }, b.kop),
     !bewerkstand && maak('p', { class: 'kaart__uitleg' }, b.uitleg),
-    maak('p', { class: 'kaart__wie' }, `${kaart.voor} ${b.voorWie ?? kaart.voorOnbekend}`),
+    maak('p', { class: 'kaart__wie' }, `${kaart.voor} ${b.voorWie?.trim() || kaart.voorOnbekend}`),
     bewerkstand ? maakBewerkformulier(b) : maakActies(b));
 }
 
@@ -473,7 +583,7 @@ function openHelp() {
 // Sneltoets ? opent de Help, behalve tijdens typen of tijdens de uitzending.
 document.addEventListener('keydown', (event) => {
   if (event.key !== '?' || event.ctrlKey || event.metaKey || event.altKey) return;
-  if (event.target.closest('input, textarea, [contenteditable]') || !el.uitzending.hidden) return;
+  if (event.target.closest('input, textarea, [contenteditable]') || !el.uitzending.hidden || el.github.open) return;
   event.preventDefault();
   openHelp();
 });
@@ -736,15 +846,16 @@ function toonUitzending() {
  * Toont de foutmelding na een mislukte import. Het huidige werk blijft staan.
  * @param {string} bestandsnaam
  * @param {import('./logic.js').Fout[]} lijst
+ * @param {{kop: string, oplossing: string}} [foutkaart] Kop en oplossing; standaard die voor een bestand
  */
-function toonFout(bestandsnaam, lijst) {
+function toonFout(bestandsnaam, lijst, foutkaart = fouten) {
   el.fout.replaceChildren(
     icoon('waarschuwing'),
     maak('div', { class: 'fout__inhoud' },
-      maak('h2', {}, fouten.kop),
+      maak('h2', {}, foutkaart.kop),
       maak('p', {}, fouten.intro(bestandsnaam, lijst.length)),
       maak('ul', {}, ...lijst.map((f) => maak('li', {}, fouten.regel(f)))),
-      maak('p', { class: 'fout__oplossing' }, fouten.oplossing)));
+      maak('p', { class: 'fout__oplossing' }, foutkaart.oplossing)));
   el.fout.hidden = false;
 }
 
@@ -768,23 +879,35 @@ async function laadBestand(bestand) {
     toonFout(bestand.name, [{ bericht: null, veld: 'bestand', melding: fouten.nietLeesbaar }]);
     return false;
   }
-  const uitkomst = valideerConcept(tekst);
+  return laadConcept(tekst, bestand.name);
+}
+
+/**
+ * Valideert en laadt een concept uit een bestand of de GitHub API.
+ * @param {unknown} gegevens JSON-tekst of een al ingelezen object
+ * @param {string} naam Bron in de foutmelding (bestandsnaam of de opgehaalde PR's)
+ * @param {(n: number) => string} [succesMelding]
+ * @param {{kop: string, oplossing: string}} [foutkaart] Kop en oplossing bij een fout
+ * @returns {boolean} true als het concept is ingeladen
+ */
+function laadConcept(gegevens, naam, succesMelding = meldingen.ingeladen, foutkaart = fouten) {
+  const uitkomst = valideerConcept(gegevens);
   if (!uitkomst.geldig) {
-    toonFout(bestand.name, uitkomst.fouten);
+    toonFout(naam, uitkomst.fouten, foutkaart);
     return false;
   }
   if (staat.berichten.length > 0 && !window.confirm(bevestigVervangen)) {
     meld(meldingen.importGeannuleerd);
     return false;
   }
-  const concept = JSON.parse(tekst);
+  const concept = typeof gegevens === 'string' ? JSON.parse(gegevens) : gegevens;
   staat.concept = { repository: concept.repository, periode: concept.periode, gegenereerdOp: concept.gegenereerdOp };
   staat.berichten = concept.berichten.map((b) => ({ ...b, publicatiestatus: PUBLICATIESTATUS }));
   staat.bewerkt = null;
   staat.gewijzigd = false;
   verbergFout();
   toonRedactie();
-  meld(meldingen.ingeladen(staat.berichten.length));
+  meld(succesMelding(staat.berichten.length));
   return true;
 }
 
@@ -810,6 +933,7 @@ el.kiezer.addEventListener('change', () => {
   if (bestand) importeer(bestand);
 });
 
+bouwGitHubDialoog();
 bouwVasteDelen();
 bouwHelp();
 bouwTeller();
