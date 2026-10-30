@@ -38,4 +38,8 @@ Webapp (public/): redactie → uitzending
 | `public/logic.js` | Pure functies zonder DOM, zoals validatie en selectie |
 | `public/app.js` | DOM, events en weergave |
 
-*Volgt:* hosting op STRATO (test en prod) en de CI/CD-workflow.
+## Hosting en CI
+
+- **Hosting:** STRATO. De inhoud van `public/` gaat handmatig met FileZilla naar de map `app1-test` (`http://app1-test.caitlinveenendaal.nl/`).
+- **CI** (`.github/workflows/ci-cd.yml`): de job `test` (lint en unit-tests) draait bij elke pull request naar `test` of `main`. De job `smoke` start je met *Run workflow* na een upload.
+- Er is geen automatische deploy; zie [plan-aanpassingen.md](plan-aanpassingen.md).

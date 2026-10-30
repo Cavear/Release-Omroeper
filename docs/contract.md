@@ -89,7 +89,8 @@ Een bestand met nul berichten is geldig, maar levert in de app de lege staat op.
 ```
 
 - `bericht` is het volgnummer van het bericht in de lijst, vanaf 1. Het is `null` als de fout het hele bestand betreft (geen JSON, leeg, te veel berichten, of een verplicht veld op bestandsniveau ontbreekt of klopt niet).
-- `veld` is de naam van het veld, bijvoorbeeld `bronUrl` of `periode.van`.
+- `veld` is de naam van het veld, bijvoorbeeld `bronUrl` of `periode.van`. Betreft de fout het bestand als geheel (geen JSON, leeg, geen object), dan is `veld` `bestand`; is een bericht zelf geen object, dan is `veld` `bericht`.
+- `valideerConcept` accepteert de inhoud als tekst of als al ingelezen object. Is het bestand geen JSON, leeg of geen object, of ontbreekt `berichten` of is het geen lijst, dan stopt de controle daar; anders komen alle fouten tegelijk terug.
 - `melding` komt uit `teksten.fouten` in `public/teksten.js`. De UI toont elke fout als `Bericht <n>, veld <veld>: <melding>`.
 
 | Regel | Melding uit `teksten.fouten` |
@@ -99,10 +100,11 @@ Een bestand met nul berichten is geldig, maar levert in de app de lege staat op.
 | Verplicht veld ontbreekt | `ontbreekt(veld)` |
 | Meer dan 5 berichten | `teVeel(n)` |
 | Dubbel `prNummer` | `dubbelNummer(nr)` |
-| Verkeerde `bronUrl` | `verkeerdeUrl(nr)` |
+| Verkeerde `bronUrl` | `verkeerdeUrl(repository, nr)` |
 | Onbekende `status` | `onbekendeStatus(waarde)` |
 | `gemergdOp` buiten de periode | `buitenPeriode` |
-| Verkeerd type, ongeldige tijd of `van` na `tot` | `verkeerdType(veld)`: bestaat nog niet, wordt toegevoegd aan `teksten.js` in de stap waarin `valideerConcept` wordt gebouwd |
+| Verkeerd type of ongeldige tijd | `verkeerdType(veld)` |
+| `periode.van` ligt na `periode.tot` | `periodeOmgedraaid` |
 
 ## Voorbeeld
 

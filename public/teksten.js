@@ -117,11 +117,15 @@ export const fouten = {
   leeg: 'Het bestand is leeg.',
   /** @param {string} veld @returns {string} */
   ontbreekt: (veld) => `het verplichte veld ${veld} ontbreekt`,
+  /** @param {number} n @returns {string} */
   teVeel: (n) => `Het bestand heeft ${n} berichten; het maximum is 5.`,
   /** @param {number} nr @returns {string} */
   dubbelNummer: (nr) => `PR-nummer ${nr} komt vaker voor; elk bericht moet een eigen PR-nummer hebben`,
-  /** @param {number} nr @returns {string} */
-  verkeerdeUrl: (nr) => `de link hoort te zijn https://github.com/<repository>/pull/${nr}`,
+  /** @param {string} repository @param {number} nr @returns {string} */
+  verkeerdeUrl: (repository, nr) => `de link hoort te zijn https://github.com/${repository}/pull/${nr}`,
+  /** @param {string} veld @returns {string} */
+  verkeerdType: (veld) => `het veld ${veld} heeft niet het juiste formaat; zie de beschrijving van het bestand`,
+  periodeOmgedraaid: 'het begin van de periode ligt na het einde',
   /** @param {string} waarde @returns {string} */
   onbekendeStatus: (waarde) => `de status "${waarde}" bestaat niet; kies concept, meer-info-nodig, goedgekeurd of uitgesloten`,
   buitenPeriode: 'de merge-datum valt buiten de periode van het journaal',
