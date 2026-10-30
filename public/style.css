@@ -382,3 +382,10 @@ button, input, textarea { font: inherit; color: inherit; }
 /* Eindscherm: ruimte boven voor de sluitknop, en bij weinig hoogte (telefoon liggend) bovenaan beginnen
    in plaats van de kop boven het beeld weg te centreren. */
 .eindscherm { justify-content: safe center; padding-top: calc(var(--tikdoel-min) + var(--space-6)); }
+/* Gebruikershandleiding (handleiding.html): koppen en lijsten in de huisstijl. */
+.handleiding h2 { font: 700 clamp(1.25rem, 3vw, 1.5rem)/1.25 var(--font-heading); }
+.handleiding ul, .handleiding ol { padding-left: var(--space-6); display: flex; flex-direction: column; gap: var(--space-2); }
+.handleiding dl > div { display: flex; flex-direction: column; gap: var(--space-1); }
+.handleiding code, .handleiding kbd { font-family: var(--font-caption); }
+.handleiding main { max-width: 72ch; }
+.handleiding__blok { padding: var(--space-4); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }

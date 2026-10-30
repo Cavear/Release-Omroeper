@@ -5,13 +5,14 @@
  * Stap 3.2: per kaart goedkeuren, uitsluiten en bewerken; het journaal exporteren.
  * Stap 3.3: teller met Start uitzending; de uitzending met nieuwsframes, Volgende, en het eindscherm.
  * Stap 3.5: aftelleader 3-2-1, titelkaart en de effectlagen (korrel, vignet, flikkering, krassen) in index.html.
+ * Stap 3.8: Help-paneel (knop Help en sneltoets ?) en een uitleg-icoon bij elk statuslabel.
  * @module app
  */
 import {
   valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, selecteerUitzending, maakTotaaloverzicht, PUBLICATIESTATUS,
 } from './logic.js';
 import {
-  algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending,
+  algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help,
 } from './teksten.js';
 
 /** Minimale horizontale veegafstand (px) voordat vegen naar links als Volgende telt. */
@@ -54,6 +55,7 @@ const el = {
   uitzending: document.getElementById('uitzending'),
   frame: document.getElementById('uitzending-frame'),
   balk: document.getElementById('balk'),
+  help: document.getElementById('help'),
 };
 
 /**
@@ -79,6 +81,7 @@ const ICONEN = {
   volgende: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   sluiten: '<path d="M6 6l12 12M18 6L6 18"/>',
   kopieer: '<rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17v.01"/>',
 };
 
 /**
@@ -153,7 +156,9 @@ function bouwVasteDelen() {
   el.kop.textContent = algemeen.redactieKop;
   el.exportknop = maak('button', { type: 'button', class: 'knop', hidden: true }, icoon('exporteren'), knoppen.exporteren);
   el.exportknop.addEventListener('click', exporteer);
-  el.kopknoppen.append(maakImportknop(false), el.exportknop);
+  el.helpknop = maak('button', { type: 'button', class: 'knop', 'aria-keyshortcuts': '?', 'aria-haspopup': 'dialog' }, icoon('help'), knoppen.help);
+  el.helpknop.addEventListener('click', openHelp);
+  el.kopknoppen.append(el.helpknop, maakImportknop(false), el.exportknop);
 
   el.publicatie.append(icoon('info'), maak('span', {}, maak('strong', {}, `${algemeen.publicatiestatus}.`), ` ${algemeen.publicatieUitleg}`));
 
@@ -165,7 +170,7 @@ function bouwVasteDelen() {
     maak('ol', { class: 'stappen' }, ...leeg.stappen.map((stap, i) =>
       maak('li', {}, maak('span', { class: 'stappen__nr', 'aria-hidden': 'true' }, String(i + 1)), maak('strong', {}, stap.titel), maak('span', {}, stap.tekst)))),
     maakImportknop(true),
-    maak('a', { href: algemeen.handleidingUrl }, algemeen.handleidingLink));
+    maak('a', { href: algemeen.handleidingUrl, target: '_blank', rel: 'noopener' }, algemeen.handleidingLink));
 }
 
 /**
@@ -185,13 +190,18 @@ function maakMetaregel(concept) {
 }
 
 /**
- * Maakt het statuslabel van een kaart.
+ * Maakt het statuslabel van een kaart, met een uitleg-icoon dat de korte uitleg bij die status openklapt.
  * @param {string} status
+ * @param {string} uitlegId id van de uitlegregel op de kaart
  * @returns {HTMLElement}
  */
-function maakStatuslabel(status) {
+function maakStatuslabel(status, uitlegId) {
   return maak('span', { class: 'status' },
-    maak('span', { class: `label label--${status}` }, icoon(status, true), statussen[status].label));
+    maak('span', { class: `label label--${status}` }, icoon(status, true), statussen[status].label),
+    maak('button', {
+      type: 'button', class: 'uitleg-icoon', 'data-actie': 'uitleg',
+      'aria-label': knoppen.uitlegOverStatus(statussen[status].label), 'aria-expanded': 'false', 'aria-controls': uitlegId,
+    }, icoon('info')));
 }
 
 /**
@@ -258,7 +268,8 @@ function maakKaart(b) {
   const modifier = { 'meer-info-nodig': ' kaart--let-op', 'uitgesloten': ' kaart--uit' }[b.status] ?? '';
   const meta = b.gemergdOp ? kaart.meta(b.prNummer, tijdOpmaak.format(new Date(b.gemergdOp))) : kaart.metaZonderTijd(b.prNummer);
   return maak('article', { class: `kaart${modifier}`, 'data-testid': 'kaart', 'data-pr': String(b.prNummer), 'aria-labelledby': kopId },
-    maak('div', { class: 'kaart__boven' }, maak('span', { class: 'kaart__meta' }, meta), maakStatuslabel(b.status)),
+    maak('div', { class: 'kaart__boven' }, maak('span', { class: 'kaart__meta' }, meta), maakStatuslabel(b.status, `uitleg-${b.prNummer}`)),
+    maak('p', { class: 'uitleg-pop', id: `uitleg-${b.prNummer}`, hidden: true }, statussen[b.status].uitleg),
     maak('p', { class: 'kaart__origineel' }, `${kaart.origineel} `, maak('span', {}, b.origineleTitel)),
     // In de bewerkstand blijft de kop als verborgen naam van de kaart bestaan.
     maak('h3', { class: bewerkstand ? 'visueel-verborgen' : 'kaart__kop', id: kopId }, b.kop),
@@ -392,6 +403,10 @@ window.addEventListener('beforeunload', (event) => {
 el.kaarten.addEventListener('click', (event) => {
   const knop = event.target.closest('button[data-actie]');
   if (!knop || knop.type === 'submit') return;
+  if (knop.dataset.actie === 'uitleg') {
+    wisselUitleg(knop);
+    return;
+  }
   const pr = Number(knop.closest('[data-pr]').dataset.pr);
   const actie = knop.dataset.actie;
   if (actie === 'goed' || actie === 'uit') wisselStatus(pr, actie);
@@ -406,6 +421,61 @@ el.kaarten.addEventListener('submit', (event) => {
 
 el.kaarten.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && event.target.closest('[data-bewerk]')) zetBewerkstand(null);
+  else if (event.key === 'Escape' && event.target.getAttribute('aria-expanded') === 'true') wisselUitleg(event.target);
+});
+
+/**
+ * Klapt de korte uitleg bij een statuslabel open of dicht. Werkt met klik, tik en toetsenbord (het is een echte knop).
+ * @param {HTMLButtonElement} knop het uitleg-icoon
+ */
+function wisselUitleg(knop) {
+  const open = knop.getAttribute('aria-expanded') !== 'true';
+  knop.setAttribute('aria-expanded', String(open));
+  document.getElementById(knop.getAttribute('aria-controls')).hidden = !open;
+}
+
+/** Bouwt de inhoud van het Help-paneel (eenmalig): statussen, knoppen, conceptbestand, publicatiestatus en handleiding. */
+function bouwHelp() {
+  const sluit = maak('button', { type: 'button', class: 'knop', 'aria-keyshortcuts': 'Escape' }, icoon('sluiten', true), knoppen.sluiten);
+  sluit.addEventListener('click', () => el.help.close());
+  // Een klik op de donkere achtergrond naast het paneel sluit het ook.
+  el.help.addEventListener('click', (event) => {
+    if (event.target !== el.help) return;
+    const r = el.help.getBoundingClientRect();
+    const buiten = event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
+    if (buiten) el.help.close();
+  });
+  el.help.append(maak('div', { class: 'help__inhoud' },
+    maak('div', { class: 'help__kop' }, maak('h2', { id: 'help-kop' }, help.kop), sluit),
+    maak('p', { class: 'onderschrift' }, help.sneltoets),
+    maak('section', { class: 'stapel', 'aria-labelledby': 'help-statussen' },
+      maak('h3', { id: 'help-statussen' }, help.statussenKop),
+      maak('dl', {}, ...Object.entries(statussen).map(([status, s]) => maak('div', {},
+        maak('dt', {}, maak('span', { class: `label label--${status}` }, icoon(status, true), s.label)),
+        maak('dd', {}, s.uitleg))))),
+    maak('section', { class: 'stapel', 'aria-labelledby': 'help-knoppen' },
+      maak('h3', { id: 'help-knoppen' }, help.knoppenKop),
+      maak('ul', {}, ...help.knoppen.map((k) => maak('li', {}, maak('strong', {}, k.naam), `: ${k.uitleg}`)))),
+    maak('section', { class: 'stapel', 'aria-labelledby': 'help-concept' },
+      maak('h3', { id: 'help-concept' }, help.conceptKop),
+      maak('p', {}, help.conceptTekst)),
+    maak('section', { class: 'help__blok stapel', 'aria-labelledby': 'help-publicatie' },
+      maak('h3', { id: 'help-publicatie' }, help.publicatieKop),
+      maak('p', {}, help.publicatieTekst)),
+    maak('a', { href: algemeen.handleidingUrl, target: '_blank', rel: 'noopener' }, help.handleiding)));
+}
+
+/** Opent het Help-paneel. Esc of Sluiten sluit het; de browser zet de focus daarna terug op de knop die het opende. */
+function openHelp() {
+  if (!el.help.open) el.help.showModal();
+}
+
+// Sneltoets ? opent de Help, behalve tijdens typen of tijdens de uitzending.
+document.addEventListener('keydown', (event) => {
+  if (event.key !== '?' || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.target.closest('input, textarea, [contenteditable]') || !el.uitzending.hidden) return;
+  event.preventDefault();
+  openHelp();
 });
 
 /** Bouwt de tellerbalk met de knop Start uitzending (eenmalig). */
@@ -741,6 +811,7 @@ el.kiezer.addEventListener('change', () => {
 });
 
 bouwVasteDelen();
+bouwHelp();
 bouwTeller();
 bouwUitzending();
 toonRedactie();
