@@ -1,0 +1,62 @@
+{
+  "repository": "Cavear/vibe_webshop",
+  "periode": { "van": "2026-10-30T13:00:00+01:00", "tot": "2026-10-30T14:00:00+01:00" },
+  "gegenereerdOp": "2026-10-30T12:02:03Z",
+  "berichten": [
+    {
+      "prNummer": 7,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/7",
+      "origineleTitel": "Zoekveld op de productpagina",
+      "gemergdOp": "2026-10-30T13:00:38+01:00",
+      "kop": "Dames en heren: de winkel leert eindelijk zoeken",
+      "uitleg": "Boven de producten staat nu een zoekveld. Tijdens het typen blijven alleen de producten zichtbaar waarvan de naam of beschrijving de zoektekst bevat.",
+      "voorWie": "Klanten die een product zoeken",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 8,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/8",
+      "origineleTitel": "Fix: winkelmandje toont na de terugknop weer de juiste inhoud",
+      "gemergdOp": "2026-10-30T13:00:41+01:00",
+      "kop": "Terugknop brengt het mandje voortaan netjes mee",
+      "uitleg": "Wie met de terugknop naar de winkel terugkeert, ziet nu de juiste inhoud van het winkelmandje. Eerder kon daar soms een oude inhoud staan.",
+      "voorWie": "Klanten met iets in hun winkelmandje",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 9,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/9",
+      "origineleTitel": "Dependency-update: @playwright/test vastgezet op 1.64.1",
+      "gemergdOp": "2026-10-30T13:00:45+01:00",
+      "kop": "Machinekamer: het testgereedschap zit nu vastgeschroefd",
+      "uitleg": "De testbibliotheek @playwright/test staat nu vast op versie 1.64.1, zodat elke testrun dezelfde versie gebruikt. Voor bezoekers van de webshop verandert er niets.",
+      "voorWie": "Ontwikkelaars van de webshop",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 10,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/10",
+      "origineleTitel": "fix bug",
+      "gemergdOp": "2026-10-30T13:00:49+01:00",
+      "kop": "In de werkplaats is iets gerepareerd",
+      "uitleg": "De beschrijving zegt alleen \"fix bug\" en niet wat er veranderd is. Vraag de maker om uitleg voordat dit bericht wordt uitgezonden.",
+      "voorWie": "onbekend",
+      "status": "meer-info-nodig",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 11,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/11",
+      "origineleTitel": "Update button styles",
+      "gemergdOp": "2026-10-30T13:00:53+01:00",
+      "kop": "Knoppen in een nieuw pak gestoken",
+      "uitleg": "De PR heeft geen beschrijving; volgens de titel is de opmaak van de knoppen aangepast. Vraag de maker wat er voor bezoekers verandert.",
+      "voorWie": "onbekend",
+      "status": "meer-info-nodig",
+      "publicatiestatus": "niet gecontroleerd"
+    }
+  ]
+}
