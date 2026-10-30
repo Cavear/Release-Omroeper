@@ -57,8 +57,8 @@ HTTPS staat niet aan op de subdomeinen; voor de demo is dat niet nodig. Zonder H
 ```
 pull request naar test/main ──► test (lint, unit-tests, UI-tests op 3 viewports, rapport als artifact)
 
-push naar test ──► test ──► deploy-test (SFTP → App1-test) ──► smoke (op de test-URL)
-push naar main ──► test ──► deploy-prod (SFTP → App1-Prod) ──► smoke (op de prod-URL)
+push naar test ──► test ──► deploy (SFTP → App1-test) ──► smoke (op de test-URL)
+push naar main ──► test ──► deploy (SFTP → App1-Prod) ──► smoke (op de prod-URL)
 
 Run workflow (handmatig) ──► smoke (op een zelfgekozen URL)
 ```
