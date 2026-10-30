@@ -111,6 +111,7 @@ Filmkorrel (SVG-ruis), vignet, lichte flikkering, krassen en een aftelleader 3-2
 | Element | Rol | Naam |
 |---|---|---|
 | Importknop (kop en lege staat) | button | `Concept importeren` |
+| GitHub-knop (kop en lege staat) | button | `GitHub ophalen`; opent een dialoog met de knop `Pull requests ophalen` |
 | Exportknop | button | `Journaal exporteren` |
 | Help | button | `Help` (sneltoets `?`) |
 | Help sluiten | button | `Sluiten` |
@@ -131,11 +132,11 @@ Gebruik daarnaast `data-testid` op: `kaart`, `teller`, `uitzending`, `nieuwsfram
 
 Van boven naar beneden, binnen `.pagina` (max. 1344 px breed, gecentreerd):
 
-1. **Kop** (`.kopbalk`): het onderschrift *HET RELEASE-BIOSCOOPJOURNAAL*, `<h1>` *De redactietafel*, en zodra er een concept is de metaregel: `<repository> · gemergd op <datum> tussen <van> en <tot> · concept van <gegenereerdOp>`. Rechts (op mobiel eronder, wrappend) de knoppen *Help*, *Concept importeren* en *Journaal exporteren* (die laatste alleen met een concept).
+1. **Kop** (`.kopbalk`): het onderschrift *HET RELEASE-BIOSCOOPJOURNAAL*, `<h1>` *De redactietafel*, en zodra er een concept is de metaregel: `<repository> · gemergd op <datum> tussen <van> en <tot> · concept van <gegenereerdOp>`; bij een periode over meer dagen `<repository> · gemergd tussen <datum> <van> en <datum> <tot> · concept van <gegenereerdOp>`. Rechts (op mobiel eronder, wrappend) de knoppen *Help*, *GitHub ophalen*, *Concept importeren* en *Journaal exporteren* (die laatste alleen met een concept).
 2. **Foutmelding** (`.fout`, alleen na een mislukte import): de kop *Dit bestand is niet ingeladen*, de zin dat er niets is geladen en het huidige werk onveranderd is, een `<ul>` met per fout `Bericht <n>, veld <veld>: <wat er mis is>` (of zonder bericht als de fout het hele bestand betreft), en in vet *Pas het bestand aan en kies opnieuw Concept importeren.*
 3. **Lege staat** (`.leeg`, zolang er geen concept is): ornament *NOG GEEN NIEUWS*, `<h2>` *Zo maak je een journaal*, een `<ol>` met 3 stappen (een groot rood cijfer, een vette titel en één zin), de primaire knop *Concept importeren* en een link naar de gebruikershandleiding.
 4. **Laadstaat**: tijdens het inlezen de importknop met spinner en *Bezig met inlezen…* (`aria-busy="true"`).
-5. **Publicatieregel** (`.publicatie`): info-icoon, **Publicatiestatus: niet gecontroleerd.** en *Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.*
+5. **Publicatieregel** (`.publicatie`): info-icoon, **Publicatiestatus: niet gecontroleerd.** en *De kop en uitleg zijn nog niet gecontroleerd; loop elk bericht na tegen de bron voordat je het goedkeurt.* (Neutraal geformuleerd: koppen komen van `/journaal` of van *GitHub ophalen*.)
 6. **Kaartenraster** (`.raster`): 1 kolom, vanaf 768 px 2 kolommen, vanaf 1024 px 3. Per bericht een `.kaart`:
    - rij 1: `PR #<nr> · gemergd <HH:MM>` (`.kaart__meta`), rechts het statuslabel plus het uitleg-icoon
    - `Origineel: <origineleTitel>` (titel in typemachineletter)
