@@ -1,0 +1,225 @@
+{
+  "repository": "Cavear/vibe_webshop",
+  "periode": {
+    "van": "2026-10-30T09:15:00+01:00",
+    "tot": "2026-10-30T13:00:00+01:00"
+  },
+  "gegenereerdOp": "2026-10-30T12:15:00Z",
+  "berichten": [
+    {
+      "prNummer": 42,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/42",
+      "origineleTitel": "Fix address persistence after refresh",
+      "gemergdOp": "2026-10-30T09:40:00+01:00",
+      "kop": "Opslaanknop onthoudt eindelijk zijn werk",
+      "uitleg": "Na het wijzigen van een adres blijven de gegevens bewaard na verversen.",
+      "voorWie": "Gebruikers die adressen wijzigen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 43,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/43",
+      "origineleTitel": "Show stock count on product page",
+      "gemergdOp": "2026-10-30T10:05:00+01:00",
+      "kop": "Voorraad komt uit de schaduw",
+      "uitleg": "De productpagina toont nu hoeveel stuks er nog op voorraad zijn.",
+      "voorWie": "Klanten die een product willen bestellen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 44,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/44",
+      "origineleTitel": "Refactor checkout helpers",
+      "gemergdOp": "2026-10-30T11:20:00+01:00",
+      "kop": "Achter de kassa wordt flink opgeruimd",
+      "uitleg": "De code van het afrekenen is herschikt. De PR beschrijft niet of klanten hier iets van merken.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 45,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/45",
+      "origineleTitel": "Add search filter for price range",
+      "gemergdOp": "2026-10-30T11:45:00+01:00",
+      "kop": "Zoeken op prijs: de portemonnee mag meebeslissen",
+      "uitleg": "In de zoekresultaten kun je nu filteren op een minimum- en maximumprijs.",
+      "voorWie": "Klanten die producten zoeken",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 46,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/46",
+      "origineleTitel": "Fix rounding of VAT in cart total",
+      "gemergdOp": "2026-10-30T12:30:00+01:00",
+      "kop": "Winkelmand rekent weer tot op de cent",
+      "uitleg": "Het totaalbedrag in de winkelmand rondt de btw nu goed af.",
+      "voorWie": "Klanten die afrekenen",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 47,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/47",
+      "origineleTitel": "Lazy-load product images",
+      "gemergdOp": "2026-10-30T12:50:00+01:00",
+      "kop": "Plaatjes wachten netjes op hun beurt",
+      "uitleg": "Productfoto’s worden pas geladen als ze in beeld komen.",
+      "voorWie": "Bezoekers van de productoverzichten",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 48,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/48",
+      "origineleTitel": "Small fix 1",
+      "gemergdOp": "2026-10-30T09:20:00+01:00",
+      "kop": "Kleine reparatie nummer 1",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 49,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/49",
+      "origineleTitel": "Small fix 2",
+      "gemergdOp": "2026-10-30T09:25:00+01:00",
+      "kop": "Kleine reparatie nummer 2",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 50,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/50",
+      "origineleTitel": "Small fix 3",
+      "gemergdOp": "2026-10-30T09:30:00+01:00",
+      "kop": "Kleine reparatie nummer 3",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 51,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/51",
+      "origineleTitel": "Small fix 4",
+      "gemergdOp": "2026-10-30T09:35:00+01:00",
+      "kop": "Kleine reparatie nummer 4",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 52,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/52",
+      "origineleTitel": "Small fix 5",
+      "gemergdOp": "2026-10-30T09:40:00+01:00",
+      "kop": "Kleine reparatie nummer 5",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 53,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/53",
+      "origineleTitel": "Small fix 6",
+      "gemergdOp": "2026-10-30T09:45:00+01:00",
+      "kop": "Kleine reparatie nummer 6",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 54,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/54",
+      "origineleTitel": "Small fix 7",
+      "gemergdOp": "2026-10-30T09:50:00+01:00",
+      "kop": "Kleine reparatie nummer 7",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 55,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/55",
+      "origineleTitel": "Small fix 8",
+      "gemergdOp": "2026-10-30T09:55:00+01:00",
+      "kop": "Kleine reparatie nummer 8",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 56,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/56",
+      "origineleTitel": "Small fix 9",
+      "gemergdOp": "2026-10-30T10:00:00+01:00",
+      "kop": "Kleine reparatie nummer 9",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 57,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/57",
+      "origineleTitel": "Small fix 10",
+      "gemergdOp": "2026-10-30T10:05:00+01:00",
+      "kop": "Kleine reparatie nummer 10",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 58,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/58",
+      "origineleTitel": "Small fix 11",
+      "gemergdOp": "2026-10-30T10:10:00+01:00",
+      "kop": "Kleine reparatie nummer 11",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 59,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/59",
+      "origineleTitel": "Small fix 12",
+      "gemergdOp": "2026-10-30T10:15:00+01:00",
+      "kop": "Kleine reparatie nummer 12",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 60,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/60",
+      "origineleTitel": "Small fix 13",
+      "gemergdOp": "2026-10-30T10:20:00+01:00",
+      "kop": "Kleine reparatie nummer 13",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 61,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/61",
+      "origineleTitel": "Small fix 14",
+      "gemergdOp": "2026-10-30T10:25:00+01:00",
+      "kop": "Kleine reparatie nummer 14",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 62,
+      "bronUrl": "https://github.com/Cavear/vibe_webshop/pull/62",
+      "origineleTitel": "Small fix 15",
+      "gemergdOp": "2026-10-30T10:30:00+01:00",
+      "kop": "Kleine reparatie nummer 15",
+      "uitleg": "Een kleine verbetering in de webshop.",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    }
+  ]
+}

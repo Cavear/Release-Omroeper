@@ -83,7 +83,7 @@ test.describe('responsive en toegankelijk', () => {
   });
 
   test('foutmelding na een ongeldig bestand', async ({ page }) => {
-    await importeer(page, 'fout-6-berichten.json');
+    await importeer(page, 'fout-21-berichten.json');
     await expect(page.getByTestId('fout')).toBeVisible();
     await controleerScherm(page, 'foutmelding');
   });

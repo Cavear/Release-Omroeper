@@ -15,35 +15,35 @@ function antwoord(data, status = 200, headers = {}) {
 }
 
 /**
- * Een fetcher die eerst de zoekresultaten en daarna per PR de details geeft.
+ * Een fetcher die de PR's als één pagina zoekresultaten geeft; de zoek-API levert titel, beschrijving en merge-moment.
  * @param {object[]} prs
  * @returns {import('vitest').Mock}
  */
 function fetcherMet(prs) {
-  const fetcher = vi.fn().mockResolvedValueOnce(antwoord({
-    total_count: prs.length, incomplete_results: false, items: prs.map(({ number }) => ({ number })),
-  }));
-  prs.forEach((pr) => fetcher.mockResolvedValueOnce(antwoord(pr)));
-  return fetcher;
+  return vi.fn().mockResolvedValueOnce(antwoord({ total_count: prs.length, incomplete_results: false, items: prs }));
 }
 
-/** @param {object} velden @returns {object} een gemergde PR met standaardwaarden */
-function pr(velden) {
-  return { number: 1, title: 'Titel', body: 'Uitleg.', merged_at: '2026-10-29T12:00:00Z', ...velden };
+/**
+ * Een gemergde PR zoals de zoek-API hem teruggeeft, met standaardwaarden.
+ * @param {{ number?: number, title?: string, body?: string | null, merged_at?: string }} velden
+ * @returns {object}
+ */
+function pr({ merged_at: gemergd = '2026-10-29T12:00:00Z', ...velden } = {}) {
+  return { number: 1, title: 'Titel', body: 'Uitleg.', pull_request: { merged_at: gemergd }, ...velden };
 }
 
 describe('haalGitHubConcept', () => {
-  it('maakt geldige, ongekeurde conceptberichten van gemergde PR’s', async () => {
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce(antwoord({ total_count: 1, incomplete_results: false, items: [{ number: 12 }] }))
-      .mockResolvedValueOnce(antwoord({
-        number: 12,
-        title: 'Zoeken in producten',
-        body: 'De productlijst kan nu worden doorzocht.',
-        merged_at: '2026-10-29T12:30:00Z',
-      }));
+  it('maakt geldige, ongekeurde conceptberichten van gemergde PR’s, met één verzoek', async () => {
+    const fetcher = fetcherMet([pr({
+      number: 12,
+      title: 'Zoeken in producten',
+      body: 'De productlijst kan nu worden doorzocht.',
+      merged_at: '2026-10-29T12:30:00Z',
+    })]);
 
-    const concept = await haalGitHubConcept('eigenaar/webshop', '2026-10-29', '2026-10-30', fetcher);
+    const { concept, totaal } = await haalGitHubConcept('eigenaar/webshop', '2026-10-29', '2026-10-30', fetcher);
+    expect(totaal).toBe(1);
+    expect(fetcher).toHaveBeenCalledTimes(1);
 
     expect(concept.berichten[0]).toMatchObject({
       prNummer: 12,
@@ -65,7 +65,7 @@ describe('haalGitHubConcept', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('weigert onvolledige zoekresultaten zonder PR-details op te halen', async () => {
+  it('weigert onvolledige zoekresultaten', async () => {
     const fetcher = vi.fn().mockResolvedValue(antwoord({
       total_count: 1,
       incomplete_results: true,
@@ -85,21 +85,45 @@ describe('haalGitHubConcept', () => {
       items: [],
     }));
 
-    const concept = await haalGitHubConcept(repository, '2026-10-29', '2026-10-30', fetcher);
+    const { concept } = await haalGitHubConcept(repository, '2026-10-29', '2026-10-30', fetcher);
 
     expect(concept.repository).toBe(repository);
   });
 
-  it('weigert periodes met meer dan vijf resultaten in plaats van stil af te kappen', async () => {
-    const fetcher = vi.fn().mockResolvedValue(antwoord({
-      total_count: 6,
-      incomplete_results: false,
-      items: Array(6).fill({ number: 1 }),
-    }));
+  it('neemt bij meer dan twintig PR’s de twintig meest recent gemergde', async () => {
+    // 25 PR's, door elkaar: PR n is gemergd op dag n van oktober.
+    const prs = Array.from({ length: 25 }, (_, i) => {
+      const n = ((i * 7) % 25) + 1;
+      return pr({ number: n, merged_at: `2026-10-${String(n).padStart(2, '0')}T12:00:00Z` });
+    });
 
-    await expect(haalGitHubConcept('eigenaar/webshop', '2026-10-01', '2026-10-30', fetcher))
-      .rejects.toMatchObject({ code: 'teVeel' });
-    expect(fetcher).toHaveBeenCalledTimes(1);
+    const { concept, totaal } = await haalGitHubConcept('a/b', '2026-10-01', '2026-10-30', fetcherMet(prs));
+
+    expect(totaal).toBe(25);
+    expect(concept.berichten.map((b) => b.prNummer)).toEqual(Array.from({ length: 20 }, (_, i) => 25 - i));
+    expect(valideerConcept(concept).geldig).toBe(true);
+  });
+
+  it('haalt meer pagina’s op als er meer dan honderd resultaten zijn', async () => {
+    const pagina = (van, aantal) => Array.from({ length: aantal }, (_, i) => pr({
+      number: van + i, merged_at: `2026-10-${String(1 + ((van + i) % 29)).padStart(2, '0')}T12:00:00Z`,
+    }));
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(antwoord({ total_count: 130, incomplete_results: false, items: pagina(1, 100) }))
+      .mockResolvedValueOnce(antwoord({ total_count: 130, incomplete_results: false, items: pagina(101, 30) }));
+
+    const { concept, totaal } = await haalGitHubConcept('a/b', '2026-10-01', '2026-10-30', fetcher);
+
+    expect(totaal).toBe(130);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(new URL(fetcher.mock.calls[1][0]).searchParams.get('page')).toBe('2');
+    expect(concept.berichten).toHaveLength(20);
+    expect(valideerConcept(concept).geldig).toBe(true);
+  });
+
+  it('geeft api als een zoekresultaat geen merge-moment heeft', async () => {
+    await expect(haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([{ number: 3, title: 'X', body: 'Y' }])))
+      .rejects.toMatchObject({ code: 'api' });
   });
 
   it('geeft een herkenbare fout voor een privé- of onbekende repository', async () => {
@@ -146,7 +170,7 @@ describe('haalGitHubConcept', () => {
   });
 
   it('sorteert op merge-moment, nieuwste eerst', async () => {
-    const concept = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([
+    const { concept } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([
       pr({ number: 1, merged_at: '2026-10-29T08:00:00Z' }),
       pr({ number: 2, merged_at: '2026-10-29T18:00:00Z' }),
     ]));
@@ -154,7 +178,7 @@ describe('haalGitHubConcept', () => {
   });
 
   it('zet een PR zonder beschrijving op meer-info-nodig met een vaste uitleg', async () => {
-    const concept = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([
+    const { concept } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([
       pr({ number: 3, body: null }),
       pr({ number: 4, body: '<!-- sjabloon -->\n\n## Checklist\n- [ ] getest' }),
     ]));
@@ -167,14 +191,14 @@ describe('haalGitHubConcept', () => {
 
   it('neemt alleen de eerste alinea over, zonder sjablooncommentaar, en verwijst naar de bron', async () => {
     const body = '<!-- Beschrijf je wijziging -->\nHet zoekveld filtert nu ook op beschrijving.\n\n## Testen\n- [x] lokaal\n\nMeer details.';
-    const { berichten: [bericht] } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([pr({ body })]));
+    const { concept: { berichten: [bericht] } } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([pr({ body })]));
     expect(bericht.uitleg).toBe('Het zoekveld filtert nu ook op beschrijving. (Ingekort; zie de bron.)');
     expect(bericht.status).toBe('concept');
   });
 
   it('kort een te lange titel in tot 90 tekens als kop, met de volledige titel als origineleTitel', async () => {
     const titel = `Lange titel ${'woord '.repeat(40)}`.trim();
-    const { berichten: [bericht] } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([pr({ title: titel })]));
+    const { concept: { berichten: [bericht] } } = await haalGitHubConcept('a/b', '2026-10-29', '2026-10-30', fetcherMet([pr({ title: titel })]));
     expect(bericht.kop.length).toBeLessThanOrEqual(90);
     expect(bericht.kop.endsWith('…')).toBe(true);
     expect(bericht.origineleTitel).toBe(titel);
@@ -186,17 +210,17 @@ describe('periode in Nederlandse tijd', () => {
   it('zoekt en bewaart de gekozen dagen in Nederlandse tijd, met winter- en zomertijd', async () => {
     const leeg = () => vi.fn().mockResolvedValue(antwoord({ total_count: 0, incomplete_results: false, items: [] }));
     const winter = leeg();
-    const concept = await haalGitHubConcept('a/b', '2026-10-27', '2026-10-28', winter);
+    const { concept } = await haalGitHubConcept('a/b', '2026-10-27', '2026-10-28', winter);
     expect(concept.periode).toEqual({ van: '2026-10-27T00:00:00+01:00', tot: '2026-10-28T23:59:59+01:00' });
     expect(new URL(winter.mock.calls[0][0]).searchParams.get('q'))
       .toContain('merged:2026-10-27T00:00:00+01:00..2026-10-28T23:59:59+01:00');
 
-    const zomer = await haalGitHubConcept('a/b', '2026-07-01', '2026-07-01', leeg());
+    const { concept: zomer } = await haalGitHubConcept('a/b', '2026-07-01', '2026-07-01', leeg());
     expect(zomer.periode).toEqual({ van: '2026-07-01T00:00:00+02:00', tot: '2026-07-01T23:59:59+02:00' });
   });
 
   it('neemt een PR die om 00:30 Nederlandse tijd is gemergd mee in die dag', async () => {
-    const concept = await haalGitHubConcept('a/b', '2026-10-28', '2026-10-28', fetcherMet([
+    const { concept } = await haalGitHubConcept('a/b', '2026-10-28', '2026-10-28', fetcherMet([
       pr({ number: 9, merged_at: '2026-10-27T23:30:00Z' }),
     ]));
     expect(valideerConcept(concept).geldig).toBe(true);

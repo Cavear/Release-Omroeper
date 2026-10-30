@@ -38,7 +38,7 @@ Het nagekeken journaal dat de app exporteert (*Journaal exporteren*, `journaal-n
 | `periode.van` | ISO 8601-tijd | ja | Begin van de periode |
 | `periode.tot` | ISO 8601-tijd | ja | Einde van de periode |
 | `gegenereerdOp` | ISO 8601-tijd | nee | Wanneer het concept is gemaakt |
-| `berichten` | lijst | ja | De nieuwsberichten, maximaal 5 |
+| `berichten` | lijst | ja | De nieuwsberichten, maximaal 20 |
 
 ### Per bericht
 
@@ -84,7 +84,7 @@ Afspraken voor de UI:
 1. Het bestand is geldige JSON en niet leeg.
 2. `repository`, `periode` (met `van` en `tot`) en `berichten` zijn aanwezig.
 3. Per bericht zijn `prNummer`, `bronUrl`, `origineleTitel`, `kop`, `uitleg` en `status` aanwezig. Tekstvelden zijn niet leeg.
-4. Er zijn maximaal 5 berichten.
+4. Er zijn maximaal 20 berichten.
 5. `prNummer` is uniek binnen het bestand.
 6. `bronUrl` is precies `https://github.com/<repository>/pull/<prNummer>`: hij begint met `https://github.com/<repository>/pull/` en eindigt op het eigen `prNummer`.
 7. `status` is `concept`, `meer-info-nodig`, `goedgekeurd` of `uitgesloten`.
@@ -116,7 +116,7 @@ Een bestand met nul berichten is geldig, maar levert in de app de lege staat op.
 | Geen geldige JSON | `geenJson` |
 | Leeg bestand | `leeg` |
 | Verplicht veld ontbreekt | `ontbreekt(veld)` |
-| Meer dan 5 berichten | `teVeel(n)` |
+| Meer dan 20 berichten | `teVeel(n)` |
 | Dubbel `prNummer` | `dubbelNummer(nr)` |
 | Verkeerde `bronUrl` | `verkeerdeUrl(repository, nr)` |
 | Onbekende `status` | `onbekendeStatus(waarde)` |

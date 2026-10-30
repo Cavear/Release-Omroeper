@@ -117,12 +117,14 @@ describe('valideerConcept: fouten in het hele bestand', () => {
     verwachtEenFout(c, { bericht: null, veld: 'berichten', melding: meldingen.verkeerdType('berichten') });
   });
 
-  test('6 berichten is te veel', () => {
+  test('20 berichten mag, 21 is te veel', () => {
     const c = voorbeeld();
-    for (let nr = 45; nr <= 47; nr++) {
+    for (let nr = 100; c.berichten.length < 20; nr++) {
       c.berichten.push({ ...c.berichten[0], prNummer: nr, bronUrl: `https://github.com/Cavear/vibe_webshop/pull/${nr}` });
     }
-    verwachtEenFout(c, { bericht: null, veld: 'berichten', melding: meldingen.teVeel(6) });
+    expect(valideerConcept(c).geldig).toBe(true);
+    c.berichten.push({ ...c.berichten[0], prNummer: 200, bronUrl: 'https://github.com/Cavear/vibe_webshop/pull/200' });
+    verwachtEenFout(c, { bericht: null, veld: 'berichten', melding: meldingen.teVeel(21) });
   });
 });
 

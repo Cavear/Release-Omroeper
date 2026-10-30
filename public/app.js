@@ -243,9 +243,12 @@ function bouwGitHubDialoog() {
   Object.assign(el, { githubRepository: repository, githubVan: van, githubTot: tot, githubFout: fout });
 }
 
-/** Opent het formulier en herstelt de laatst gebruikte publieke repository. */
+/** Opent het formulier met de laatst gebruikte publieke repository, of anders de standaardrepository. */
 function openGitHubDialoog() {
-  try { el.githubRepository.value = localStorage.getItem('release-omroeper.repository') || ''; } catch { /* Opslag is optioneel. */ }
+  el.githubRepository.value = githubTeksten.standaardRepository;
+  try {
+    el.githubRepository.value = localStorage.getItem('release-omroeper.repository') || githubTeksten.standaardRepository;
+  } catch { /* Opslag is optioneel. */ }
   el.githubFout.hidden = true;
   el.github.showModal();
   el.githubRepository.focus();
@@ -281,11 +284,13 @@ async function haalGitHubOp(repository, van, tot, formulier, knop, fout) {
   formulier.querySelectorAll('input, button').forEach((element) => { element.disabled = true; });
   zetGitHubknop(knop, true);
   try {
-    const concept = await haalGitHubConcept(repository, van, tot);
+    const { concept, totaal } = await haalGitHubConcept(repository, van, tot);
     // Dialoog tijdens het ophalen gesloten: het resultaat niet meer laden.
     if (!el.github.open) return;
     el.github.close();
-    if (laadConcept(concept, githubTeksten.bron, githubTeksten.opgehaald, githubTeksten.foutkaart)) {
+    // Vielen er oudere PR's af, dan zegt de melding hoeveel er in totaal waren.
+    const opgehaald = (n) => (totaal > n ? githubTeksten.nieuwsteVan(n, totaal) : githubTeksten.opgehaald(n));
+    if (laadConcept(concept, githubTeksten.bron, opgehaald, githubTeksten.foutkaart)) {
       try { localStorage.setItem('release-omroeper.repository', repository); } catch { /* Opslag is optioneel. */ }
     }
   } catch (error) {

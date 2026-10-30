@@ -17,7 +17,7 @@ function lees(naam) {
 const VERWACHTE_FOUTEN = {
   'fout-ontbrekend-veld.json': { bericht: 2, veld: 'kop', melding: meldingen.ontbreekt('kop') },
   'fout-verkeerde-url.json': { bericht: 3, veld: 'bronUrl', melding: meldingen.verkeerdeUrl('Cavear/vibe_webshop', 44) },
-  'fout-6-berichten.json': { bericht: null, veld: 'berichten', melding: meldingen.teVeel(6) },
+  'fout-21-berichten.json': { bericht: null, veld: 'berichten', melding: meldingen.teVeel(21) },
   'fout-dubbel-prnummer.json': { bericht: 3, veld: 'prNummer', melding: meldingen.dubbelNummer(42) },
   'fout-buiten-periode.json': { bericht: 2, veld: 'gemergdOp', melding: meldingen.buitenPeriode },
   'fout-geen-json.txt': { bericht: null, veld: 'bestand', melding: meldingen.geenJson },

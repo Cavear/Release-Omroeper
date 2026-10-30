@@ -9,7 +9,7 @@ import { fouten as meldingen, algemeen } from './teksten.js';
 export const STATUSSEN = ['concept', 'meer-info-nodig', 'goedgekeurd', 'uitgesloten'];
 
 /** Maximaal aantal berichten in één journaal. */
-export const MAX_BERICHTEN = 5;
+export const MAX_BERICHTEN = 20;
 
 /** Publicatiestatus van elk bericht zolang een mens het niet heeft nagelopen. */
 export const PUBLICATIESTATUS = 'niet gecontroleerd';
