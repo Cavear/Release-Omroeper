@@ -19,7 +19,7 @@ Je hebt Node.js 22.12 of nieuwer nodig.
 npm install
 npm run lint        # codecontrole
 npm run test:unit   # unit-tests (Vitest)
-npm run test:ui     # UI-tests (Playwright), volgen in fase 3
+npm run test:ui     # UI-tests (Playwright) op mobiel, tablet en desktop
 ```
 
 De app is een statische pagina zonder build-stap. Open `public/index.html` via een lokale webserver, bijvoorbeeld XAMPP: `http://localhost/Release_omroeper/public/`.

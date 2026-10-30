@@ -7,7 +7,7 @@
 ```bash
 npm run lint        # ESLint
 npm run test:unit   # unit-tests met Vitest (tests/unit/)
-npm run test:ui     # UI-tests met Playwright (tests/ui/, volgen in fase 3)
+npm run test:ui     # UI-tests met Playwright (tests/ui/), op mobiel, tablet en desktop
 npm run test:smoke  # smoketest tegen BASE_URL (standaard de testomgeving)
 ```
 
