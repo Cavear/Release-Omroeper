@@ -34,9 +34,9 @@ export function alsBestand(concept) {
 }
 
 /**
- * De kaart van een bericht, gevonden via de kop (de toegankelijke naam van het article).
- * @param {import('@playwright/test').Page} page
- * @param {number} pr
+ * De kaart van een bericht, gevonden via het PR-nummer (data-pr).
+ * @param {import('@playwright/test').Page} page de pagina met de redactie
+ * @param {number} pr het PR-nummer van het bericht
  */
 export function kaartVan(page, pr) {
   return page.locator(`[data-testid="kaart"][data-pr="${pr}"]`);

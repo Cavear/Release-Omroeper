@@ -23,7 +23,14 @@ const TYPES = {
 };
 
 createServer(async (verzoek, antwoord) => {
-  const pad = decodeURIComponent(new URL(verzoek.url, 'http://localhost').pathname);
+  let pad;
+  try {
+    pad = decodeURIComponent(new URL(verzoek.url, 'http://localhost').pathname);
+  } catch {
+    // Kapotte procentcodering: netjes weigeren in plaats van de server te laten crashen.
+    antwoord.writeHead(400).end();
+    return;
+  }
   const bestand = normalize(join(MAP, pad.endsWith('/') ? `${pad}index.html` : pad));
   // Nooit buiten public/ lezen.
   if (!bestand.startsWith(MAP.endsWith(sep) ? MAP : MAP + sep)) {
@@ -36,4 +43,5 @@ createServer(async (verzoek, antwoord) => {
   } catch {
     antwoord.writeHead(404).end('Niet gevonden');
   }
-}).listen(POORT, () => console.log(`public/ op http://localhost:${POORT}/`));
+  // Alleen op deze computer bereikbaar, niet op het lokale netwerk.
+}).listen(POORT, 'localhost', () => console.log(`public/ op http://localhost:${POORT}/`));
