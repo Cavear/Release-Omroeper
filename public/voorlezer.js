@@ -4,8 +4,11 @@
  * @module voorlezer
  */
 
-/** Toonhoogte en tempo van de omroeper (1 = normaal); de kop iets plechtiger dan de rest. */
-export const STEM = { toonhoogte: 0.8, tempo: 0.9, kopToonhoogte: 0.75, kopTempo: 0.82 };
+/**
+ * Toonhoogte en tempo van de omroeper (1 = normaal); de kop iets plechtiger dan de rest.
+ * Het tempo is twee keer zo snel als eerst (0,9 en 0,82), zodat hij binnen de 10 seconden van een scherm blijft.
+ */
+export const STEM = { toonhoogte: 0.8, tempo: 1.8, kopToonhoogte: 0.75, kopTempo: 1.64 };
 
 /**
  * Voorkeur voor de stem, in volgorde: Nederlandse mannenstemmen van Edge, Apple en Windows.
