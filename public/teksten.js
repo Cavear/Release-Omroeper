@@ -293,7 +293,8 @@ export const uitzending = {
   balkScheiding: '   ★   ',
   balkTag: 'JOURNAAL',
   einde: 'Einde van het journaal',
-  overzichtKop: 'TOTAALOVERZICHT · OM TE KOPIËREN'
+  overzichtKop: 'TOTAALOVERZICHT · OM TE KOPIËREN',
+  geenStem: 'Geen Nederlandse stem in deze browser: de film loopt zonder omroeper. Chrome of Edge heeft er wel een.'
 };
 
 /**
