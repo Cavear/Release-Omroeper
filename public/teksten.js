@@ -109,7 +109,7 @@ export const leeg = {
 /** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
 export const github = {
   kop: 'Gemergde PR’s ophalen',
-  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. Bij meer dan vijf resultaten wordt niets ingeladen; verklein dan de periode. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
+  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. Bij meer dan vijf resultaten wordt niets ingeladen; verklein dan de periode. Elke PR krijgt een journaalkop op basis van de titel en de beschrijving als uitleg, als ongekeurd concept; controleer en redigeer ze voordat je goedkeurt.',
   repositoryLabel: 'Repository (owner/repo)',
   repositoryVoorbeeld: 'Cavear/vibe_webshop',
   vanLabel: 'Gemergd vanaf',
@@ -120,6 +120,38 @@ export const github = {
   ontbrekendeBeschrijving: 'De pull request heeft geen beschrijving. Open de bron en vul een zakelijke uitleg in.',
   zieBron: '(Ingekort; zie de bron.)',
   bron: 'de opgehaalde pull requests',
+  /**
+   * Journaalkoppen voor opgehaalde PR's: een vaste opener per soort wijziging, gevolgd door het
+   * onderwerp uit de PR-titel. De grap zit alleen in de opener, nooit over personen, en belooft
+   * geen voordeel dat niet in de titel staat. Per soort meerdere openers, zodat niet elke kop gelijk begint.
+   */
+  koppen: {
+    soorten: [
+      { woorden: /\b(fix|fixes|fixed|bug|bugfix|hotfix|herstel\w*|repar\w*|opgelost|verhelp\w*|corrig\w*)\b/i,
+        openers: ['Euvel verholpen', 'De monteur was er al', 'Weer in het gareel'] },
+      // Vóór tests: 'Dependency-update: @playwright/test' is onderhoud, geen test.
+      { woorden: /\b(deps?|dependenc\w*|bump|upgrade|versie|vastgezet|pin)\b/i,
+        openers: ['In de machinekamer', 'Bouten aangedraaid'] },
+      { woorden: /\b(test|tests|testen|e2e|playwright|vitest)\b/i,
+        openers: ['Nieuws uit de proefkamer', 'Op de proefbank'] },
+      { woorden: /\b(docs?|readme|handleiding|documentatie|instructies)\b/i,
+        openers: ['Uit de leeszaal', 'Voor de leesgrage'] },
+      { woorden: /\b(style|styles|styling|css|opmaak|knop\w*|button\w*|kleur\w*|lettertype)\b/i,
+        openers: ['Een nieuw pakje', 'De werkplaats in zondagse kleren'] },
+      { woorden: /\b(ci|workflow|pipeline|deploy\w*|actions)\b/i,
+        openers: ['Op de lopende band', 'De fabriekshal draait door'] },
+      { woorden: /\b(refactor\w*|opruim\w*|cleanup|clean-up|herschr\w*)\b/i,
+        openers: ['Grote schoonmaak', 'De bezem erdoor'] },
+      { woorden: /\b(feat|feature|nieuw\w*|toevoeg\w*|toegevoegd|add|adds|added)\b/i,
+        openers: ['Primeur in de werkplaats', 'Gloednieuw', 'Kersvers van de band'] },
+    ],
+    /** Als geen soort past. */
+    algemeen: ['Dames en heren', 'Uit de werkplaats', 'Bericht van het front'],
+    /** @param {string} opener @param {string} onderwerp @returns {string} */
+    kop: (opener, onderwerp) => `${opener}: ${onderwerp}`,
+    /** Voor een titel die niets zegt (bijvoorbeeld alleen 'fix bug'): geen verzonnen onderwerp. */
+    vaag: 'Er werd gesleuteld in de werkplaats, maar waaraan?',
+  },
   foutkaart: {
     kop: 'De pull requests zijn niet ingeladen',
     oplossing: 'Controleer de repository en de periode en kies opnieuw GitHub ophalen.'
@@ -201,7 +233,7 @@ export const help = {
   statussenKop: 'DE VIER STATUSSEN',
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
-    { naam: 'GitHub ophalen', uitleg: 'haal maximaal vijf gemergde PR’s op uit een publieke repository. De titel en beschrijving blijven ongekeurd tot je ze controleert.' },
+    { naam: 'GitHub ophalen', uitleg: 'haal maximaal vijf gemergde PR’s op uit een publieke repository. Kop en uitleg blijven ongekeurd tot je ze controleert.' },
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
     { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
     { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
@@ -217,9 +249,9 @@ export const help = {
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
   conceptKop: 'HET CONCEPTBESTAND',
-  conceptTekst: 'Je kunt zelf een conceptbestand importeren of maximaal vijf gemergde PR’s uit een publieke GitHub-repository ophalen. De directe koppeling neemt de PR-titel en de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
+  conceptTekst: 'Je kunt zelf een conceptbestand importeren of maximaal vijf gemergde PR’s uit een publieke GitHub-repository ophalen. De directe koppeling maakt een journaalkop met een vaste opener bij de PR-titel, neemt de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
-  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen neemt de app de titel en de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
+  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen maakt de app een journaalkop van de titel en neemt de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
   handleiding: 'Naar de gebruikershandleiding',
   sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };

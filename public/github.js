@@ -64,6 +64,31 @@ function kortIn(tekst, max) {
   return `${(grens > max / 2 ? stuk.slice(0, grens) : stuk).trimEnd()}…`;
 }
 
+/** Titels die niets zeggen over de wijziging; daar verzinnen we geen onderwerp bij. */
+const VAGE_TITEL = /^(fix(es|ed)?|fix(es|ed)? (a |the |some )?bugs?|bugs?|bug ?fix(es)?|updates?|updated|wip|changes|misc|tweaks?|kleine (fix|aanpassing)(en)?|aanpassingen)$/i;
+
+/**
+ * Maakt een journaalkop van een PR-titel: een vaste opener per soort wijziging (uit teksten.js)
+ * met het onderwerp uit de titel. Er komt geen inhoud bij die niet in de titel staat.
+ * @param {string} titel De originele PR-titel
+ * @param {number} prNummer Kiest deterministisch een van de openers, zodat koppen variëren
+ * @returns {{kop: string, nakijken: boolean}} nakijken is true bij een vage of ingekorte titel
+ */
+function maakKop(titel, prNummer) {
+  const { koppen } = teksten;
+  const schoon = titel.trim();
+  // Voorvoegsels als 'feat:', 'Fix(mandje):' of 'Dependency-update:' horen niet in de kop.
+  const onderwerp = schoon.replace(/^\[?[\w-]+(\([^)]*\))?!?\]?:\s*/, '').replace(/[.\s]+$/, '');
+  if (onderwerp.length < 4 || VAGE_TITEL.test(onderwerp)) return { kop: koppen.vaag, nakijken: true };
+  const soort = koppen.soorten.find(({ woorden }) => woorden.test(schoon));
+  const openers = soort ? soort.openers : koppen.algemeen;
+  const opener = openers[prNummer % openers.length];
+  // Hoofdletters blijven zoals in de titel (namen als GitHub of Playwright); een tweede dubbele punt wordt een streepje.
+  const volledig = koppen.kop(opener, onderwerp.replace(/:\s+/g, ' – '));
+  const kop = kortIn(volledig, MAX_KOP);
+  return { kop, nakijken: kop !== volledig };
+}
+
 /**
  * Maakt van een PR-beschrijving een korte uitleg: zonder HTML-commentaar, koppen en checklists,
  * alleen de eerste alinea. Er komt niets bij behalve een vaste verwijzing naar de bron.
@@ -154,7 +179,7 @@ export async function haalGitHubConcept(repository, van, tot, fetcher = globalTh
       throw new GitHubFout('api');
     }
     const { uitleg, volledig } = maakUitleg(pr.body);
-    const kop = kortIn(pr.title.trim(), MAX_KOP);
+    const { kop, nakijken } = maakKop(pr.title, pr.number);
     return {
       prNummer: pr.number,
       bronUrl: `https://github.com/${repository}/pull/${pr.number}`,
@@ -162,8 +187,8 @@ export async function haalGitHubConcept(repository, van, tot, fetcher = globalTh
       gemergdOp: pr.merged_at,
       kop,
       uitleg,
-      // Zonder beschrijving of met een ingekorte kop valt de kaart op, zodat de redactie hem nakijkt.
-      status: volledig && kop === pr.title.trim() ? 'concept' : 'meer-info-nodig',
+      // Zonder beschrijving, of met een vage of ingekorte titel, valt de kaart op, zodat de redactie hem nakijkt.
+      status: volledig && !nakijken ? 'concept' : 'meer-info-nodig',
     };
   }).sort((a, b) => Date.parse(b.gemergdOp) - Date.parse(a.gemergdOp));
 
