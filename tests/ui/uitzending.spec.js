@@ -148,19 +148,32 @@ async function nepStem(page) {
 }
 
 test.describe('de uitzending als film', () => {
-  test('loopt vanzelf door en de omroeper leest titel, kop, uitleg en slotwoord voor', async ({ page }) => {
+  test('elk scherm staat 10 seconden in beeld en de omroeper leest titel, kop, uitleg en slotwoord voor', async ({ page }) => {
     await nepStem(page);
+    await page.clock.install();
     await redigeer(page);
     await page.getByRole('button', { name: 'Start uitzending' }).click();
     const uitzending = page.getByTestId('uitzending');
+    const kop = uitzending.getByRole('heading', { level: 1 });
 
-    // Zonder op Volgende te drukken: leader, titelkaart, het bericht en het eindscherm.
-    await expect(uitzending.getByRole('heading', { level: 1 })).toHaveText(/uit de werkplaats/i, { timeout: 6000 });
-    await expect(page.getByTestId('nieuwsframe')).toBeVisible({ timeout: 6000 });
-    await expect(page.getByTestId('totaaloverzicht')).toBeVisible({ timeout: 6000 });
+    // Zonder op Volgende te drukken: leader (3 s), titelkaart (10 s), het bericht (10 s) en het eindscherm.
+    await page.clock.runFor(3500);
+    await expect(kop).toHaveText(/uit de werkplaats/i);
+    await expect(page.getByTestId('geen-stem')).toBeHidden();
+    await page.clock.runFor(9000);
+    await expect(kop).toHaveText(/uit de werkplaats/i);
+    await page.clock.runFor(1500);
+    await expect(page.getByTestId('nieuwsframe')).toBeVisible();
+    // Het bericht verscheen op 13 s; op 22 s staat het er nog.
+    await page.clock.runFor(8000);
+    await expect(page.getByTestId('nieuwsframe')).toBeVisible();
+    await page.clock.runFor(1500);
+    await expect(page.getByTestId('totaaloverzicht')).toBeVisible();
+    await page.clock.runFor(1000);
     await expect.poll(() => page.evaluate(() => window.gesproken.at(-1))).toBe('Tot de volgende release!');
 
-    const gesproken = await page.evaluate(() => window.gesproken);
+    // De lege zin is het ontgrendelen van de spraak bij Start uitzending.
+    const gesproken = (await page.evaluate(() => window.gesproken)).filter(Boolean);
     expect(gesproken.slice(0, 3)).toEqual([
       'Het Release-Bioscoopjournaal.', 'Uit de werkplaats.', 'De release van 30 oktober 2026, in 1 bericht.',
     ]);
@@ -192,29 +205,33 @@ test.describe('de uitzending als film', () => {
 
   test('Pauzeren zet de film stil, Afspelen laat hem verder lopen', async ({ page }) => {
     await nepStem(page);
+    await page.clock.install();
     await redigeer(page);
     await startTotTitelkaart(page);
     const uitzending = page.getByTestId('uitzending');
+    await page.clock.runFor(100);
     await expect(page.locator('#melding')).toHaveText(/uit de werkplaats/i);
     await uitzending.getByRole('button', { name: 'Pauzeren' }).click();
     await expect(page.locator('#melding')).toContainText('Het journaal staat stil');
     // Ruim langer dan een scène: hij blijft op de titelkaart staan.
-    await page.waitForTimeout(3000);
+    await page.clock.runFor(20000);
     await expect(uitzending.getByRole('heading', { level: 1 })).toHaveText(/uit de werkplaats/i);
 
     await page.keyboard.press('p');
     await expect(uitzending.getByRole('button', { name: 'Pauzeren' })).toBeVisible();
-    await expect(page.getByTestId('nieuwsframe')).toBeVisible({ timeout: 6000 });
+    await page.clock.runFor(10500);
+    await expect(page.getByTestId('nieuwsframe')).toBeVisible();
   });
 
-  test('zonder stem loopt de film op leestijd door', async ({ page }) => {
+  test('zonder Nederlandse stem loopt de film stil door en zegt dat in beeld', async ({ page }) => {
     await page.addInitScript(() => Object.defineProperty(window, 'speechSynthesis', { value: undefined, configurable: true }));
     await page.clock.install();
     await redigeer(page);
     await startTotTitelkaart(page);
-    await page.clock.runFor(4000);
+    await expect(page.getByTestId('geen-stem')).toContainText('Geen Nederlandse stem in deze browser');
+    await page.clock.runFor(9000);
     await expect(page.getByTestId('uitzending').getByRole('heading', { level: 1 })).toHaveText(/uit de werkplaats/i);
-    await page.clock.runFor(4000);
+    await page.clock.runFor(1500);
     await expect(page.getByTestId('nieuwsframe')).toBeVisible();
   });
 
