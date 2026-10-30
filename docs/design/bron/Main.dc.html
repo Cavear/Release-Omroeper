@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>Redactietafel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Playfair+Display:wght@400;700&amp;family=Source+Serif+4:wght@400;600&amp;family=Special+Elite&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#8b2e1f}a:hover{color:#6f2418}
+.ro-raster{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@media (min-width:768px){.ro-raster{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}}
+@media (min-width:1024px){.ro-raster{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.ro-kaart{padding:16px}
+@media (min-width:768px){.ro-kaart{padding:24px}}
+.ro-kaart.ro-let-op{border:2px solid #141210 !important;box-shadow:inset 0 6px 0 #e0a530}
+.ro-kaart.ro-uit{opacity:.85}
+.ro-kaart.ro-uit h3{text-decoration:line-through;text-decoration-thickness:1px;color:#5c4f3d}
+.ro-label-concept{background:#faf5ea;border:1.5px dashed #5c4f3d;color:#141210}
+.ro-label-meer-info-nodig{background:#e0a530;border:1.5px solid #141210;color:#141210}
+.ro-label-goedgekeurd{background:#2e4d3b;border:1.5px solid #2e4d3b;color:#f2ead8}
+.ro-label-uitgesloten{background:#d6cfc2;border:1.5px solid #d6cfc2;color:#5c4f3d;text-decoration:line-through}
+.ro-knop:focus-visible,.ro-info:focus-visible{outline:3px solid #141210;outline-offset:2px}
+.ro-start:disabled{background:#e6dcc6 !important;color:#5c4f3d !important;border-color:#cbbd9f !important;cursor:not-allowed}
+.ro-balk{position:sticky;bottom:0}
+@media (max-width:767px){.ro-balk{position:fixed;left:0;right:0;bottom:0;z-index:5;border-radius:0 !important}.ro-ruimte{height:120px}.ro-kop-acties{width:100%}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #f2ead8; color: #141210; font-family: 'Source Serif 4', Georgia, serif; box-sizing: border-box;">
+<div style="max-width: 1344px; margin: 0 auto; padding: 32px clamp(16px, 4vw, 48px) 32px; display: flex; flex-direction: column; gap: 24px; box-sizing: border-box;">
+
+<header style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; border-bottom: 1px solid #cbbd9f; padding-bottom: 24px;">
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+<div style="font-family: 'Special Elite', 'Courier New', monospace; font-size: 14px; letter-spacing: 0.12em; color: #6e5a3c;">HET RELEASE-BIOSCOOPJOURNAAL</div>
+<h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: clamp(1.75rem, 4vw, 2.25rem); line-height: 1.15;">De redactietafel</h1>
+<sc-if value="{{ heeftConcept }}" hint-placeholder-val="{{ true }}">
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5c4f3d;">Cavear/vibe_webshop · gemergd op 30 okt 2026 tussen 09:15 en 13:00 · concept van 10:15</p>
+</sc-if>
+</div>
+<div class="ro-kop-acties" style="display: flex; flex-wrap: wrap; gap: 8px;">
+<button class="ro-knop" onClick="{{ openHelp }}" aria-label="Help openen (sneltoets ?)" style="min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17v.01"></path></svg>Help</button>
+<button class="ro-knop" style="min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M4 15v5h16v-5"></path></svg>Concept importeren</button>
+<sc-if value="{{ heeftConcept }}" hint-placeholder-val="{{ true }}">
+<button class="ro-knop" style="min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M4 15v5h16v-5"></path></svg>Journaal exporteren</button>
+</sc-if>
+</div>
+</header>
+
+<sc-if value="{{ isFout }}" hint-placeholder-val="{{ false }}">
+<div role="alert" aria-live="assertive" style="background: #f6dcd4; color: #6e1f14; border: 1.5px solid #6e1f14; border-radius: 4px; padding: 16px 24px; display: flex; gap: 12px; align-items: flex-start; max-width: 760px;">
+<svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px;"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18v.01"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0;">
+<h2 style="margin: 0; font: 700 19px/1.3 'Playfair Display', Georgia, serif;">Dit bestand is niet ingeladen</h2>
+<p style="margin: 0; font-size: 16px; line-height: 1.5;">We vonden 2 fouten in <span style="font-family: 'Special Elite', 'Courier New', monospace;">journaal-concept.json</span>. Er is niets geladen; je huidige werk is onveranderd.</p>
+<ul style="margin: 0; padding-left: 24px; font-size: 16px; line-height: 1.5; display: flex; flex-direction: column; gap: 4px;">
+<li>Bericht 3, veld <span style="font-family: 'Special Elite', 'Courier New', monospace;">bronUrl</span>: de link eindigt op /pull/41, maar het PR-nummer is 42.</li>
+<li>Het bestand heeft 6 berichten; het maximum is 5.</li>
+</ul>
+<p style="margin: 0; font-size: 16px; line-height: 1.5; font-weight: 600;">Pas het bestand aan en kies opnieuw Concept importeren.</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLeeg }}" hint-placeholder-val="{{ false }}">
+<section aria-labelledby="leeg-kop" style="background: #faf5ea; border: 1px solid #cbbd9f; border-radius: 4px; padding: clamp(24px, 5vw, 64px); display: flex; flex-direction: column; gap: 32px; align-items: center; text-align: center;">
+<div style="display: flex; flex-direction: column; gap: 12px; align-items: center; max-width: 640px;">
+<div style="display: flex; align-items: center; gap: 12px; color: #6e5a3c; font: 14px/1 'Special Elite', 'Courier New', monospace; letter-spacing: 0.2em;"><span style="display: block; width: 48px; height: 1px; background: #a08660;"></span>NOG GEEN NIEUWS<span style="display: block; width: 48px; height: 1px; background: #a08660;"></span></div>
+<h2 id="leeg-kop" style="margin: 0; font: 700 clamp(1.5rem, 3.5vw, 2rem)/1.2 'Playfair Display', Georgia, serif;">Zo maak je een journaal</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.55; color: #5c4f3d;">Van gemergde pull requests naar een uitzending die iedereen begrijpt, in drie stappen.</p>
+</div>
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; width: 100%; max-width: 960px; text-align: left;">
+<li style="display: flex; flex-direction: column; gap: 8px; border-top: 2px solid #141210; padding-top: 16px;"><span style="font: 400 40px/1 'Abril Fatface', Georgia, serif; color: #8b2e1f;">1</span><strong style="font: 700 19px/1.3 'Playfair Display', Georgia, serif;">Laat Claude het concept maken</strong><span style="font-size: 16px; line-height: 1.5; color: #5c4f3d;">Claude haalt via GitHub de gemergde PR’s op en schrijft journaal-concept.json.</span></li>
+<li style="display: flex; flex-direction: column; gap: 8px; border-top: 2px solid #141210; padding-top: 16px;"><span style="font: 400 40px/1 'Abril Fatface', Georgia, serif; color: #8b2e1f;">2</span><strong style="font: 700 19px/1.3 'Playfair Display', Georgia, serif;">Importeer het concept</strong><span style="font-size: 16px; line-height: 1.5; color: #5c4f3d;">De app controleert het bestand en zegt precies wat er mis is als het niet klopt.</span></li>
+<li style="display: flex; flex-direction: column; gap: 8px; border-top: 2px solid #141210; padding-top: 16px;"><span style="font: 400 40px/1 'Abril Fatface', Georgia, serif; color: #8b2e1f;">3</span><strong style="font: 700 19px/1.3 'Playfair Display', Georgia, serif;">Redigeer en zend uit</strong><span style="font-size: 16px; line-height: 1.5; color: #5c4f3d;">Pas koppen aan, keur goed of sluit uit, en start de uitzending.</span></li>
+</ol>
+<button class="ro-knop" style="min-height: 48px; padding: 0 24px; border-radius: 2px; border: 1.5px solid #8b2e1f; background: #8b2e1f; color: #f2ead8; font: 600 17px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M4 15v5h16v-5"></path></svg>Concept importeren</button>
+<a href="#" style="font-size: 15px;">Lees de gebruikershandleiding</a>
+</section>
+</sc-if>
+
+<sc-if value="{{ heeftConcept }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 24px;">
+<p style="margin: 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 15px; line-height: 1.5; color: #5c4f3d;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6e5a3c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.01"></path></svg><span><strong style="color: #141210;">Publicatiestatus: niet gecontroleerd.</strong> Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.</span></p>
+
+<div class="ro-raster">
+<sc-for list="{{ berichten }}" as="b" hint-placeholder-count="5">
+<article class="ro-kaart {{ b.kaartKlasse }}" style="background: #faf5ea; border: 1px solid #cbbd9f; border-radius: 4px; display: flex; flex-direction: column; gap: 12px; min-width: 0;">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+<span style="font: 14px/1.4 'Special Elite', 'Courier New', monospace; color: #5c4f3d;">PR #{{ b.prNummer }} · gemergd {{ b.tijd }}</span>
+<span style="display: inline-flex; align-items: center;">
+<span class="{{ b.labelKlasse }}" style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 2px; font: 14px/1.3 'Special Elite', 'Courier New', monospace; letter-spacing: 0.03em;">
+<sc-if value="{{ b.isGoed }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></sc-if>
+<sc-if value="{{ b.isInfo }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 .9-1 1.7V15M12 18.5v.01"></path></svg></sc-if>
+<sc-if value="{{ b.isUit }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></sc-if>
+<sc-if value="{{ b.isConcept }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-dasharray="3 3"><circle cx="12" cy="12" r="8"></circle></svg></sc-if>
+{{ b.labelTekst }}</span>
+<button class="ro-info" onClick="{{ openHelp }}" aria-label="Uitleg over de status {{ b.labelTekst }}" style="width: 44px; height: 44px; display: inline-grid; place-items: center; background: none; border: 0; color: #6e5a3c; cursor: pointer; border-radius: 50%;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v6M12 7.5v.01"></path></svg></button>
+</span>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5c4f3d;">Origineel: <span style="font-family: 'Special Elite', 'Courier New', monospace;">{{ b.origineleTitel }}</span></p>
+<h3 style="margin: 0; font: 700 22px/1.25 'Playfair Display', Georgia, serif; overflow-wrap: anywhere;">{{ b.kop }}</h3>
+<p style="margin: 0; font-size: 17px; line-height: 1.55;">{{ b.uitleg }}</p>
+<p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5c4f3d;">Voor: {{ b.voorWie }}</p>
+<div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #cbbd9f; padding-top: 16px; margin-top: auto;">
+<button class="ro-knop" onClick="{{ b.wisselGoed }}" style="min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; cursor: pointer;">{{ b.goedLabel }}</button>
+<button class="ro-knop" onClick="{{ b.wisselUit }}" style="min-height: 44px; min-width: 44px; padding: 0 16px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; cursor: pointer;">{{ b.uitLabel }}</button>
+<button class="ro-knop" style="min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 2px; border: 1.5px solid transparent; background: none; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;">Bewerken</button>
+<a class="ro-knop" href="{{ b.bronUrl }}" target="_blank" rel="noopener" style="min-height: 44px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; color: #8b2e1f; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; text-underline-offset: 3px;">Bron openen<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"></path></svg></a>
+</div>
+</article>
+</sc-for>
+</div>
+
+<div class="ro-ruimte"></div>
+<div class="ro-balk" style="background: #141210; color: #f2ead8; border-radius: 4px; padding: 16px clamp(16px, 3vw, 24px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px;">
+<div role="status" aria-live="polite" style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+<strong style="font: 400 20px/1.2 'Abril Fatface', Georgia, serif; letter-spacing: 0.02em;">{{ aantalGoed }} van {{ aantalTotaal }} goedgekeurd</strong>
+<span style="font-size: 15px; line-height: 1.4; color: #c9b996;">{{ tellerUitleg }}</span>
+</div>
+<button class="ro-knop ro-start" disabled="{{ startUit }}" style="min-height: 48px; padding: 0 24px; border-radius: 2px; border: 1.5px solid #8b2e1f; background: #8b2e1f; color: #f2ead8; font: 600 17px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M7 5l12 7-12 7z"></path></svg>Start uitzending</button>
+</div>
+</div>
+</sc-if>
+</div>
+
+<sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position: fixed; inset: 0; background: rgba(20, 18, 16, 0.55); z-index: 10; display: flex; justify-content: flex-end;">
+<aside role="dialog" aria-modal="true" aria-labelledby="help-kop" style="width: min(440px, 100%); height: 100%; overflow-y: auto; background: #faf5ea; color: #141210; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 24px; border-left: 2px solid #141210;">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+<h2 id="help-kop" style="margin: 0; font: 700 26px/1.2 'Playfair Display', Georgia, serif;">Hoe werkt het?</h2>
+<button class="ro-knop" onClick="{{ sluitHelp }}" style="min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 2px; border: 1.5px solid #8a7656; background: #faf5ea; color: #141210; font: 600 16px/1.2 'Source Serif 4', Georgia, serif; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>Sluiten (Esc)</button>
+</div>
+<section style="display: flex; flex-direction: column; gap: 12px;">
+<h3 style="margin: 0; font: 14px/1.3 'Special Elite', 'Courier New', monospace; letter-spacing: 0.12em; color: #6e5a3c;">DE VIER STATUSSEN</h3>
+<dl style="margin: 0; display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 1.5;">
+<div style="display: flex; flex-direction: column; gap: 4px;"><dt><span class="ro-label-concept" style="display: inline-block; padding: 2px 8px; border-radius: 2px; font: 14px/1.3 'Special Elite', 'Courier New', monospace;">concept</span></dt><dd style="margin: 0;">Nog niet nagekeken. Komt niet in de uitzending.</dd></div>
+<div style="display: flex; flex-direction: column; gap: 4px;"><dt><span class="ro-label-meer-info-nodig" style="display: inline-block; padding: 2px 8px; border-radius: 2px; font: 14px/1.3 'Special Elite', 'Courier New', monospace;">meer informatie nodig</span></dt><dd style="margin: 0;">De PR is te vaag om uit te leggen. Vraag de maker om uitleg, pas het bericht aan en keur het daarna goed.</dd></div>
+<div style="display: flex; flex-direction: column; gap: 4px;"><dt><span class="ro-label-goedgekeurd" style="display: inline-block; padding: 2px 8px; border-radius: 2px; font: 14px/1.3 'Special Elite', 'Courier New', monospace;">goedgekeurd</span></dt><dd style="margin: 0;">Nagekeken en klaar. Alleen deze berichten komen in de uitzending.</dd></div>
+<div style="display: flex; flex-direction: column; gap: 4px;"><dt><span class="ro-label-uitgesloten" style="display: inline-block; padding: 2px 8px; border-radius: 2px; font: 14px/1.3 'Special Elite', 'Courier New', monospace;">uitgesloten</span></dt><dd style="margin: 0;">Bewust weggelaten. Met Weer opnemen zet je het terug op concept.</dd></div>
+</dl>
+</section>
+<section style="display: flex; flex-direction: column; gap: 12px;">
+<h3 style="margin: 0; font: 14px/1.3 'Special Elite', 'Courier New', monospace; letter-spacing: 0.12em; color: #6e5a3c;">DE KNOPPEN</h3>
+<ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.5;">
+<li><strong>Concept importeren</strong>: laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.</li>
+<li><strong>Goedkeuren / Uitsluiten</strong>: bepaal wat er wordt uitgezonden.</li>
+<li><strong>Bewerken</strong>: pas kop en uitleg aan, met Opslaan of Annuleren.</li>
+<li><strong>Bron openen</strong>: bekijk de pull request op GitHub in een nieuw tabblad.</li>
+<li><strong>Start uitzending</strong>: volledig scherm, één bericht tegelijk. Volgende met de knop, pijltje rechts of vegen; Esc sluit af.</li>
+<li><strong>Journaal exporteren</strong>: sla het nagekeken journaal op als bestand.</li>
+</ul>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px; background: #f2ead8; border: 1px solid #cbbd9f; border-radius: 4px; padding: 16px;">
+<h3 style="margin: 0; font: 700 17px/1.3 'Playfair Display', Georgia, serif;">Publicatiestatus: niet gecontroleerd</h3>
+<p style="margin: 0; font-size: 16px; line-height: 1.5;">Claude schreef de koppen en uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat dit onder elk bericht, ook in de uitzending.</p>
+</section>
+<a href="#" style="font-size: 16px; min-height: 44px; display: inline-flex; align-items: center;">Naar de gebruikershandleiding</a>
+</aside>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"staat":{"editor":"enum","options":["gevuld","leeg","fout"],"default":"gevuld"},"help":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      helpOpen: null,
+      status: { 42: 'goedgekeurd', 43: 'goedgekeurd', 44: 'concept', 45: 'meer-info-nodig', 46: 'uitgesloten' }
+    };
+  }
+  renderVals() {
+    const staat = this.props.staat ?? 'gevuld';
+    const helpOpen = this.state.helpOpen === null ? !!this.props.help : this.state.helpOpen;
+    const basis = [
+      { prNummer: 42, tijd: '09:40', origineleTitel: 'Add search field to product page', kop: 'Zoekveld vindt eindelijk wat u zoekt', uitleg: 'Op de productpagina staat nu een zoekveld waarmee je direct op productnaam kunt zoeken.', voorWie: 'klanten die een product zoeken' },
+      { prNummer: 43, tijd: '10:02', origineleTitel: 'Fix cart persistence after refresh', kop: 'Winkelmandje vergeet voortaan niets meer', uitleg: 'Na het verversen van de pagina blijft de inhoud van het winkelmandje bewaard.', voorWie: 'klanten die de pagina verversen' },
+      { prNummer: 44, tijd: '10:31', origineleTitel: 'Bump vite from 5.4.10 to 5.4.11', kop: 'Motorkap open: de machinekamer krijgt nieuwe onderdelen', uitleg: 'Een bibliotheek waarmee de webshop wordt gebouwd is bijgewerkt. Voor gebruikers verandert er niets zichtbaars.', voorWie: 'ontwikkelaars' },
+      { prNummer: 45, tijd: '11:05', origineleTitel: 'fix bug', kop: 'Iets in de werkplaats is gerepareerd', uitleg: 'De beschrijving zegt niet wat er veranderd is. Vraag de maker om uitleg voordat dit bericht wordt uitgezonden.', voorWie: 'nog onbekend' },
+      { prNummer: 46, tijd: '11:48', origineleTitel: 'Update button styles', kop: 'Knoppen in nieuw pak gestoken', uitleg: 'De PR heeft geen beschrijving; de wijziging raakt de opmaak van knoppen.', voorWie: 'nog onbekend' }
+    ];
+    const zet = (nr, s) => this.setState({ status: { ...this.state.status, [nr]: s } });
+    const labels = { 'concept': 'concept', 'meer-info-nodig': 'meer informatie nodig', 'goedgekeurd': 'goedgekeurd', 'uitgesloten': 'uitgesloten' };
+    const berichten = basis.map((b) => {
+      const s = this.state.status[b.prNummer];
+      return {
+        ...b,
+        bronUrl: 'https://github.com/Cavear/vibe_webshop/pull/' + b.prNummer,
+        labelTekst: labels[s],
+        labelKlasse: 'ro-label-' + s,
+        kaartKlasse: s === 'meer-info-nodig' ? 'ro-let-op' : (s === 'uitgesloten' ? 'ro-uit' : ''),
+        isGoed: s === 'goedgekeurd', isInfo: s === 'meer-info-nodig', isUit: s === 'uitgesloten', isConcept: s === 'concept',
+        goedLabel: s === 'goedgekeurd' ? 'Terug naar concept' : 'Goedkeuren',
+        uitLabel: s === 'uitgesloten' ? 'Weer opnemen' : 'Uitsluiten',
+        wisselGoed: () => zet(b.prNummer, s === 'goedgekeurd' ? 'concept' : 'goedgekeurd'),
+        wisselUit: () => zet(b.prNummer, s === 'uitgesloten' ? 'concept' : 'uitgesloten')
+      };
+    });
+    const aantalGoed = berichten.filter((b) => b.isGoed).length;
+    const aantalInfo = berichten.filter((b) => b.isInfo).length;
+    let tellerUitleg = aantalInfo > 0 ? aantalInfo + ' bericht heeft meer informatie nodig · alleen goedgekeurde berichten worden uitgezonden' : 'Alleen goedgekeurde berichten worden uitgezonden';
+    if (aantalGoed === 0) tellerUitleg = 'Keur minstens één bericht goed om de uitzending te starten';
+    return {
+      berichten,
+      aantalGoed,
+      aantalTotaal: berichten.length,
+      tellerUitleg,
+      startUit: aantalGoed === 0,
+      heeftConcept: staat === 'gevuld',
+      isLeeg: staat !== 'gevuld',
+      isFout: staat === 'fout',
+      helpOpen,
+      openHelp: () => this.setState({ helpOpen: true }),
+      sluitHelp: () => this.setState({ helpOpen: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
