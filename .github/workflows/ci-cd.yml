@@ -48,7 +48,7 @@ jobs:
           retention-days: 14
 
   deploy:
-    name: deploy-${{ github.ref == 'refs/heads/main' && 'prod' || 'test' }}
+    name: deploy
     needs: test
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
