@@ -96,6 +96,8 @@ test.describe('redactie en uitzending', () => {
     await redigeer(page);
     await startTotTitelkaart(page);
     const uitzending = page.getByTestId('uitzending');
+    // Eerst de aankondiging van de titelkaart afwachten, anders overschrijft die de melding van de knop.
+    await expect(page.locator('#melding')).toHaveText(/uit de werkplaats/i);
     await uitzending.getByRole('button', { name: 'Geluid uit' }).click();
     await expect(uitzending.getByRole('button', { name: 'Geluid aan' })).toBeVisible();
     await expect(page.locator('#melding')).toContainText('Het geluid staat uit');
@@ -193,6 +195,7 @@ test.describe('de uitzending als film', () => {
     await redigeer(page);
     await startTotTitelkaart(page);
     const uitzending = page.getByTestId('uitzending');
+    await expect(page.locator('#melding')).toHaveText(/uit de werkplaats/i);
     await uitzending.getByRole('button', { name: 'Pauzeren' }).click();
     await expect(page.locator('#melding')).toContainText('Het journaal staat stil');
     // Ruim langer dan een scène: hij blijft op de titelkaart staan.

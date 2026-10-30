@@ -30,15 +30,15 @@ const tijdOpmaak = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '
 const datumOpmaak = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TIJDZONE });
 const datumLang = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TIJDZONE });
 
-/** Eerste en laatste stap van de uitzending vóór de nieuwsframes. */
+/** Eerste en laatste stap van de uitzending vÃ³Ã³r de nieuwsframes. */
 const LEADER = -2;
 const TITELKAART = -1;
-/** Duur van één cijfer van de aftelleader in ms (token --duur-leader). */
+/** Duur van Ã©Ã©n cijfer van de aftelleader in ms (token --duur-leader). */
 const LEADER_TIK = 1000;
 
 /**
  * De toestand van de redactie. `bewerkt` is het PR-nummer van de kaart in de bewerkstand, of null.
- * `gewijzigd` is waar als er redactiewerk is dat nog niet is geëxporteerd.
+ * `gewijzigd` is waar als er redactiewerk is dat nog niet is geÃ«xporteerd.
  * @type {{ concept: null | { repository: string, periode: { van: string, tot: string }, gegenereerdOp?: string }, berichten: import('./logic.js').Bericht[], bewerkt: number | null, gewijzigd: boolean }}
  */
 const staat = { concept: null, berichten: [], bewerkt: null, gewijzigd: false };
@@ -204,7 +204,7 @@ function bouwVasteDelen() {
 
 /**
  * Formatteert een lokale datum voor een date-input.
- * @param {number} [dagenTerug] Aantal dagen vóór vandaag
+ * @param {number} [dagenTerug] Aantal dagen vÃ³Ã³r vandaag
  * @returns {string} Datum als JJJJ-MM-DD
  */
 function lokaleDatum(dagenTerug = 0) {
@@ -213,7 +213,7 @@ function lokaleDatum(dagenTerug = 0) {
   return `${datum.getFullYear()}-${String(datum.getMonth() + 1).padStart(2, '0')}-${String(datum.getDate()).padStart(2, '0')}`;
 }
 
-/** Bouwt het formulier voor het ophalen van PR’s uit een publieke GitHub-repository. */
+/** Bouwt het formulier voor het ophalen van PRâ€™s uit een publieke GitHub-repository. */
 function bouwGitHubDialoog() {
   const repository = maak('input', {
     id: 'github-repository', type: 'text', required: true, autocomplete: 'off',
@@ -264,7 +264,7 @@ function zetGitHubknop(knop, bezig) {
 }
 
 /**
- * Haalt PR’s op, valideert het concept en laat bestaand redactiewerk intact bij een fout.
+ * Haalt PRâ€™s op, valideert het concept en laat bestaand redactiewerk intact bij een fout.
  * Fouten van GitHub blijven in de dialoog staan; daarna sluit de dialoog, zodat een
  * validatiefout (#fout) of melding (#melding) zichtbaar is.
  * @param {string} repository owner/repo
@@ -390,7 +390,7 @@ function maakBewerkformulier(b) {
 }
 
 /**
- * Maakt de kaart van één bericht, in de gewone stand of in de bewerkstand.
+ * Maakt de kaart van Ã©Ã©n bericht, in de gewone stand of in de bewerkstand.
  * @param {import('./logic.js').Bericht} b
  * @returns {HTMLElement}
  */
@@ -469,7 +469,7 @@ function leesBewerkstand() {
 }
 
 /**
- * Zet een kaart in of uit de bewerkstand. Er is altijd hoogstens één kaart in de bewerkstand.
+ * Zet een kaart in of uit de bewerkstand. Er is altijd hoogstens Ã©Ã©n kaart in de bewerkstand.
  * Wie naar een andere kaart wisselt terwijl er nog niet-opgeslagen tekst staat, krijgt eerst een vraag.
  * @param {number | null} pr
  */
@@ -525,7 +525,7 @@ function exporteer() {
   meld(meldingen.geexporteerd);
 }
 
-// Wie het tabblad sluit of ververst met werk dat nog niet is geëxporteerd, krijgt eerst de vraag van de browser.
+// Wie het tabblad sluit of ververst met werk dat nog niet is geÃ«xporteerd, krijgt eerst de vraag van de browser.
 window.addEventListener('beforeunload', (event) => {
   if (!staat.gewijzigd && !leesBewerkstand()?.gewijzigd) return;
   event.preventDefault();
@@ -721,7 +721,7 @@ function wisselGeluid() {
   const aan = !muziekStaatAan();
   zetMuziek(aan);
   toonGeluidknop();
-  el.melding.textContent = aan ? meldingen.geluidAan : meldingen.geluidUit;
+  meld(aan ? meldingen.geluidAan : meldingen.geluidUit);
   // Het huidige scherm begint opnieuw: met stem als het geluid aan gaat, op leestijd als het uit gaat.
   if (regie.speelt) speelScene();
 }
@@ -736,7 +736,7 @@ function toonGeluidknop() {
 function wisselPauze() {
   regie.speelt = !regie.speelt;
   toonPauzeknop();
-  el.melding.textContent = regie.speelt ? meldingen.afspelen : meldingen.gepauzeerd;
+  meld(regie.speelt ? meldingen.afspelen : meldingen.gepauzeerd);
   if (regie.speelt) speelScene();
   else stopRegie();
 }
@@ -787,7 +787,7 @@ function voorleestekst() {
 }
 
 /**
- * Speelt het huidige scherm af als een scène uit de film: de omroeper leest voor (of, zonder stem of geluid,
+ * Speelt het huidige scherm af als een scÃ¨ne uit de film: de omroeper leest voor (of, zonder stem of geluid,
  * wacht de film de leestijd af), daarna een korte stilte en dan het volgende scherm. Na het eindscherm stopt de muziek.
  */
 async function speelScene() {
@@ -806,7 +806,7 @@ async function speelScene() {
     if (beurt !== regie.beurt) return;
   }
 
-  // Na het slotwoord is de film af; het eindscherm blijft staan om te kopiëren.
+  // Na het slotwoord is de film af; het eindscherm blijft staan om te kopiÃ«ren.
   if (eind) { stopMuziek(); return; }
   await wachtInBeurt(PAUZE_NA_SCENE);
   if (beurt === regie.beurt) volgende();
@@ -890,7 +890,7 @@ function maakTitelkaart() {
 }
 
 /**
- * Maakt het nieuwsframe van één bericht: onderschrift, kop, uitleg en bron met publicatiestatus.
+ * Maakt het nieuwsframe van Ã©Ã©n bericht: onderschrift, kop, uitleg en bron met publicatiestatus.
  * @param {import('./logic.js').Bericht} b
  * @param {number} i volgnummer vanaf 1
  * @param {number} n aantal berichten
@@ -929,7 +929,7 @@ function maakEindscherm() {
       kopieer.replaceChildren(icoon('kopieer'), knoppen.gekopieerd);
       status.textContent = meldingen.gekopieerd;
     } else {
-      // Zonder klembord: selecteer het overzicht, zodat de gebruiker het zelf kan kopiëren.
+      // Zonder klembord: selecteer het overzicht, zodat de gebruiker het zelf kan kopiÃ«ren.
       window.getSelection().selectAllChildren(overzicht);
       status.textContent = meldingen.kopierenMislukt;
     }
@@ -942,7 +942,7 @@ function maakEindscherm() {
 /**
  * Zet tekst op het klembord. Zonder HTTPS werkt de Clipboard API niet; dan via de oudere kopieermethode.
  * @param {string} tekst
- * @returns {Promise<boolean>} true als het kopiëren lukte
+ * @returns {Promise<boolean>} true als het kopiÃ«ren lukte
  */
 async function kopieerTekst(tekst) {
   try {
