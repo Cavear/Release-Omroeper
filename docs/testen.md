@@ -8,6 +8,7 @@
 npm run lint        # ESLint
 npm run test:unit   # unit-tests met Vitest (tests/unit/)
 npm run test:ui     # UI-tests met Playwright (tests/ui/, volgen in fase 3)
+npm run test:smoke  # smoketest tegen BASE_URL (standaard de testomgeving)
 ```
 
 ## Unit-tests (Vitest)
@@ -42,3 +43,10 @@ In `testdata/`. `voorbeeld.json` bevat 3 geldige berichten. *Volgt:* de gegenere
 ## Testbewijs
 
 Screenshots en rapporten van de kwaliteitscheck (`/kwaliteitscheck`) staan in `testbewijs/`.
+
+## Smoketest na een upload
+
+De app gaat handmatig met FileZilla naar STRATO (map `app1-test`). Controleer daarna of de pagina laadt:
+
+- **Lokaal:** `npm run test:smoke` (standaard `http://app1-test.caitlinveenendaal.nl/`), of met een andere URL: `BASE_URL=<url> npm run test:smoke`.
+- **In GitHub:** Actions → *ci-cd* → *Run workflow*, eventueel met een andere URL.
