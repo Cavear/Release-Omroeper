@@ -50,5 +50,7 @@ Opgenomen: precies de 5 verwachte PR's (#7 t/m #11). Open (#4, #5, #12), geslote
 
 ## Afwijkingen
 
+- **Bugfix-scenario (#8):** de skill noemt "winkelmandje onthoudt de inhoud na verversen". Dat deed de webshop al (localStorage). Gebouwd is daarom de verwante, echte fout: na de terugknop kon het mandje een oude inhoud tonen.
+- **Periode nog niet voorbij bij het ophalen:** het concept is gemaakt om 13:02, de periode loopt tot 14:00. Om 13:05 is opnieuw gecontroleerd: na #13 is er niets meer gemergd of aangemaakt, dus de selectie klopt.
 - **Dependency-update (#9):** het plan noemt "versie van een bibliotheek opgehoogd". `@playwright/test` stond al op de nieuwste versie (1.64.1) en het oefentoken mag de workflow (MariaDB-image) niet wijzigen (geen `workflow`-scope). Daarom is de versie vastgezet in plaats van verhoogd; een verzonnen versienummer is bewust vermeden. Voor het journaal is het effect hetzelfde: een technische wijziging zonder verschil voor bezoekers. De branchnaam `oefen/mariadb-11-8` is een overblijfsel van de eerste poging.
 - **Ophalen (4.2 en 4.3):** de read-only MCP-server `github` heeft geen toegang tot de privérepo `vibe_webshop` (404; de autorisatie geldt alleen voor `Release-Omroeper`). Het lezen is daarom gedaan met de GitHub CLI (`gh api`, alleen GET-verzoeken). De schrijvende server `github-oefenrepo` is voor het journaal niet gebruikt. Oplossing: geef de `github`-server leestoegang tot `vibe_webshop` (zie het open punt over de dubbele github-server).
