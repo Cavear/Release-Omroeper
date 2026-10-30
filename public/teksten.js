@@ -177,6 +177,10 @@ export const uitzending = {
   /** @param {number} i @param {number} n @returns {string} */
   berichtVan: (i, n) => `BERICHT ${i} VAN ${n} · UIT DE WERKPLAATS`,
   bron: 'Bron:',
+  /** @param {number} nr @param {string} titel @returns {string} */
+  bronLink: (nr, titel) => `PR #${nr} · ${titel}`,
+  /** Scheiding tussen de koppen in de lopende balk. */
+  balkScheiding: '   ★   ',
   balkTag: 'JOURNAAL',
   einde: 'Einde van het journaal',
   overzichtKop: 'TOTAALOVERZICHT · OM TE KOPIËREN'

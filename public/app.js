@@ -3,10 +3,18 @@
  * De logica komt uit logic.js, alle zichtbare teksten uit teksten.js.
  * Stap 3.1: concept importeren, controleren en als kaarten tonen; foutmelding, lege staat en laadstaat.
  * Stap 3.2: per kaart goedkeuren, uitsluiten en bewerken; het journaal exporteren.
+ * Stap 3.3: teller met Start uitzending; de uitzending met nieuwsframes, Volgende, en het eindscherm.
  * @module app
  */
-import { valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, PUBLICATIESTATUS } from './logic.js';
-import { algemeen, knoppen, statussen, kaart, leeg, meldingen, fouten, bevestigVervangen } from './teksten.js';
+import {
+  valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, selecteerUitzending, maakTotaaloverzicht, PUBLICATIESTATUS,
+} from './logic.js';
+import {
+  algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending,
+} from './teksten.js';
+
+/** Minimale horizontale veegafstand (px) voordat vegen naar links als Volgende telt. */
+const VEEG_MIN = 50;
 
 /** Tijdzone van de redactie; tijden in het concept worden hierin getoond. */
 const TIJDZONE = 'Europe/Amsterdam';
@@ -32,7 +40,19 @@ const el = {
   kaarten: document.getElementById('kaarten'),
   kiezer: document.getElementById('bestandskiezer'),
   melding: document.getElementById('melding'),
+  teller: document.getElementById('teller'),
+  redactie: document.getElementById('redactie'),
+  uitzending: document.getElementById('uitzending'),
+  frame: document.getElementById('uitzending-frame'),
+  balk: document.getElementById('balk'),
 };
+
+/**
+ * De lopende uitzending: de goedgekeurde berichten en welk scherm nu in beeld is.
+ * `stap` 0 t/m n-1 is een nieuwsframe, n is het eindscherm.
+ * @type {{ berichten: import('./logic.js').Bericht[], stap: number }}
+ */
+const uz = { berichten: [], stap: 0 };
 
 /** Inline SVG-iconen (stroke 1.75, currentColor), altijd naast tekst en verborgen voor schermlezers. */
 const ICONEN = {
@@ -45,6 +65,10 @@ const ICONEN = {
   'meer-info-nodig': '<path d="M9 9a3 3 0 1 1 4 2.8c-.7.3-1 .9-1 1.7V15M12 18.5v.01"/>',
   'uitgesloten': '<path d="M6 6l12 12M18 6L6 18"/>',
   'concept': '<circle cx="12" cy="12" r="8" stroke-dasharray="3 3"/>',
+  start: '<path d="M7 5l12 7-12 7z"/>',
+  volgende: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  sluiten: '<path d="M6 6l12 12M18 6L6 18"/>',
+  kopieer: '<rect x="8" y="8" width="12" height="12"/><path d="M16 8V4H4v12h4"/>',
 };
 
 /**
@@ -245,6 +269,7 @@ function toonRedactie(focus = null) {
   el.leeg.hidden = heeftBerichten;
   el.werk.hidden = !heeftBerichten;
   el.kaarten.replaceChildren(...staat.berichten.map(maakKaart));
+  toonTeller();
   const formulier = el.kaarten.querySelector(`[data-bewerk="${staat.bewerkt}"]`);
   if (open && formulier && open.pr === staat.bewerkt) {
     formulier.elements.kop.value = open.kop;
@@ -352,6 +377,187 @@ el.kaarten.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && event.target.closest('[data-bewerk]')) zetBewerkstand(null);
 });
 
+/** Bouwt de tellerbalk met de knop Start uitzending (eenmalig). */
+function bouwTeller() {
+  el.tellerAantal = maak('p', { class: 'tellerbalk__aantal' });
+  el.tellerUitleg = maak('p', { class: 'tellerbalk__uitleg', id: 'teller-uitleg' });
+  el.startknop = maak('button', { type: 'button', class: 'knop knop--primair knop--groot', 'aria-describedby': 'teller-uitleg' },
+    icoon('start'), knoppen.startUitzending);
+  el.startknop.addEventListener('click', startUitzending);
+  el.teller.append(maak('div', { role: 'status' }, el.tellerAantal, el.tellerUitleg), el.startknop);
+}
+
+/** Werkt de teller en de startknop bij. Zonder goedgekeurd bericht is de startknop uit, met uitleg waarom. */
+function toonTeller() {
+  const goed = staat.berichten.filter((b) => b.status === 'goedgekeurd').length;
+  const meerInfo = staat.berichten.filter((b) => b.status === 'meer-info-nodig').length;
+  el.tellerAantal.textContent = teller.aantal(goed, staat.berichten.length);
+  el.tellerUitleg.textContent = goed === 0 ? teller.nietsGoedgekeurd
+    : meerInfo > 0 ? teller.metMeerInfo(meerInfo) : teller.alleenGoedgekeurd;
+  el.startknop.disabled = goed === 0;
+}
+
+/** Bouwt de vaste delen van de uitzending: de sluitknop en de lopende balk met Volgende (eenmalig). */
+function bouwUitzending() {
+  const sluit = maak('button', { type: 'button', class: 'knop uitzending__sluit', 'aria-keyshortcuts': 'Escape' },
+    icoon('sluiten', true), knoppen.uitzendingSluiten);
+  sluit.addEventListener('click', sluitUitzending);
+  el.uitzending.prepend(sluit);
+
+  el.balkLoop = maak('div', { class: 'balk__loop', 'aria-hidden': 'true' });
+  el.volgendeknop = maak('button', { type: 'button', class: 'knop balk__volgende', 'aria-keyshortcuts': 'ArrowRight' },
+    knoppen.volgende, icoon('volgende'));
+  el.volgendeknop.addEventListener('click', volgende);
+  el.balk.append(
+    maak('div', { class: 'balk__tag', 'aria-hidden': 'true' }, uitzending.balkTag),
+    maak('div', { class: 'balk__venster' }, el.balkLoop),
+    el.volgendeknop);
+
+  document.addEventListener('keydown', (event) => {
+    if (el.uitzending.hidden) return;
+    if (event.key === 'Escape') { event.preventDefault(); sluitUitzending(); }
+    else if (event.key === 'ArrowRight' && !event.altKey && !event.ctrlKey && !event.metaKey
+      && uz.stap < uz.berichten.length) { event.preventDefault(); volgende(); }
+  });
+
+  // Vegen naar links op een touchscreen is Volgende.
+  let begin = null;
+  el.uitzending.addEventListener('pointerdown', (event) => {
+    begin = event.pointerType === 'touch' ? { x: event.clientX, y: event.clientY } : null;
+  });
+  el.uitzending.addEventListener('pointerup', (event) => {
+    if (!begin) return;
+    const dx = event.clientX - begin.x;
+    const dy = event.clientY - begin.y;
+    begin = null;
+    if (dx <= -VEEG_MIN && Math.abs(dx) > Math.abs(dy) && uz.stap < uz.berichten.length) volgende();
+  });
+
+  // Esc in volledig scherm verlaat eerst de fullscreen (de app krijgt die toets niet); sluit dan ook de uitzending.
+  // Maar niet als de fullscreen wegviel doordat iemand een bronlink in een nieuw tabblad opende: dan blijft hij open.
+  document.addEventListener('fullscreenchange', () => {
+    if (document.fullscreenElement || el.uitzending.hidden) return;
+    setTimeout(() => {
+      if (document.visibilityState === 'visible' && document.hasFocus()) sluitUitzending();
+    }, 150);
+  });
+}
+
+/** Start de uitzending met de goedgekeurde berichten, op volledig scherm als dat kan. */
+function startUitzending() {
+  uz.berichten = selecteerUitzending(staat.berichten);
+  if (uz.berichten.length === 0) return;
+  uz.stap = 0;
+  const koppen = uz.berichten.map((b) => b.kop).join(uitzending.balkScheiding) + uitzending.balkScheiding;
+  // Twee keer dezelfde tekst, zodat de lopende balk (stap 3.5) naadloos doorloopt.
+  el.balkLoop.replaceChildren(maak('span', {}, koppen), maak('span', {}, koppen));
+  el.redactie.inert = true;
+  el.uitzending.hidden = false;
+  el.uitzending.requestFullscreen?.().catch(() => {});
+  toonUitzending();
+}
+
+/** Sluit de uitzending en zet de focus terug op Start uitzending. */
+function sluitUitzending() {
+  if (el.uitzending.hidden) return;
+  el.uitzending.hidden = true;
+  el.redactie.inert = false;
+  // Het verlaten van volledig scherm verplaatst de focus; zet hem daarna pas terug op Start uitzending.
+  const focusOpStart = () => el.startknop.focus();
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {}).finally(focusOpStart);
+  else focusOpStart();
+}
+
+/** Gaat naar het volgende scherm van de uitzending. */
+function volgende() {
+  if (uz.stap >= uz.berichten.length) return;
+  uz.stap += 1;
+  toonUitzending();
+}
+
+/**
+ * Maakt het nieuwsframe van één bericht: onderschrift, kop, uitleg en bron met publicatiestatus.
+ * @param {import('./logic.js').Bericht} b
+ * @param {number} i volgnummer vanaf 1
+ * @param {number} n aantal berichten
+ * @returns {HTMLElement}
+ */
+function maakNieuwsframe(b, i, n) {
+  return maak('article', { class: 'nieuwsframe', 'data-testid': 'nieuwsframe', 'aria-labelledby': 'nieuwsframe-kop' },
+    maak('p', { class: 'nieuwsframe__rubriek' }, uitzending.berichtVan(i, n)),
+    maak('h1', { class: 'nieuwsframe__kop', id: 'nieuwsframe-kop' }, b.kop),
+    maak('p', { class: 'nieuwsframe__uitleg' }, b.uitleg),
+    maak('p', { class: 'nieuwsframe__bron' },
+      maak('span', {}, `${uitzending.bron} `, maak('a', { href: b.bronUrl, target: '_blank', rel: 'noopener' }, uitzending.bronLink(b.prNummer, b.origineleTitel))),
+      maak('span', {}, algemeen.publicatiestatus)));
+}
+
+/**
+ * Maakt het eindscherm met het totaaloverzicht en de knoppen Kopieer overzicht en Terug naar de redactie.
+ * @returns {HTMLElement}
+ */
+function maakEindscherm() {
+  const status = maak('p', { class: 'onderschrift', role: 'status' });
+  const kopieer = maak('button', { type: 'button', class: 'knop knop--primair knop--groot' }, icoon('kopieer'), knoppen.kopieerOverzicht);
+  const terug = maak('button', { type: 'button', class: 'knop knop--groot' }, knoppen.terugNaarRedactie);
+  const lijst = maak('ol', {}, ...uz.berichten.map((b) =>
+    maak('li', {}, maak('strong', {}, b.kop), maak('br'), b.uitleg, maak('br'), maak('a', { href: b.bronUrl, target: '_blank', rel: 'noopener' }, b.bronUrl))));
+  const overzicht = maak('section', { class: 'overzicht', 'data-testid': 'totaaloverzicht', 'aria-labelledby': 'overzicht-kop' },
+    maak('h2', { id: 'overzicht-kop' }, uitzending.overzichtKop), lijst, maak('p', { class: 'onderschrift' }, algemeen.publicatiestatus));
+  // De feedback staat in het eindscherm zelf: #melding valt in volledig scherm buiten beeld.
+  kopieer.addEventListener('click', async () => {
+    const gelukt = await kopieerTekst(maakTotaaloverzicht(uz.berichten));
+    kopieer.focus();
+    // Eerst leegmaken, zodat een schermlezer dezelfde tekst bij een tweede klik opnieuw voorleest.
+    status.textContent = '';
+    await new Promise((klaar) => setTimeout(klaar, 50));
+    if (gelukt) {
+      kopieer.replaceChildren(icoon('kopieer'), knoppen.gekopieerd);
+      status.textContent = meldingen.gekopieerd;
+    } else {
+      // Zonder klembord: selecteer het overzicht, zodat de gebruiker het zelf kan kopiëren.
+      window.getSelection().selectAllChildren(overzicht);
+      status.textContent = meldingen.kopierenMislukt;
+    }
+  });
+  terug.addEventListener('click', sluitUitzending);
+  return maak('div', { class: 'eindscherm' },
+    maak('h1', {}, uitzending.einde), overzicht, maak('div', { class: 'knoppenrij' }, kopieer, terug), status);
+}
+
+/**
+ * Zet tekst op het klembord. Zonder HTTPS werkt de Clipboard API niet; dan via de oudere kopieermethode.
+ * @param {string} tekst
+ * @returns {Promise<boolean>} true als het kopiëren lukte
+ */
+async function kopieerTekst(tekst) {
+  try {
+    if (window.isSecureContext && navigator.clipboard) {
+      await navigator.clipboard.writeText(tekst);
+      return true;
+    }
+  } catch {
+    // Valt terug op de oudere methode hieronder.
+  }
+  const veld = maak('textarea', { readonly: true, 'aria-hidden': 'true', class: 'visueel-verborgen' });
+  veld.value = tekst;
+  document.body.append(veld);
+  veld.select();
+  let gelukt;
+  try { gelukt = document.execCommand('copy'); } catch { gelukt = false; }
+  veld.remove();
+  return gelukt;
+}
+
+/** Toont het huidige scherm van de uitzending en zet de focus op de belangrijkste knop. */
+function toonUitzending() {
+  const n = uz.berichten.length;
+  const eind = uz.stap >= n;
+  el.frame.replaceChildren(eind ? maakEindscherm() : maakNieuwsframe(uz.berichten[uz.stap], uz.stap + 1, n));
+  el.balk.hidden = eind;
+  (eind ? el.frame.querySelector('.knop--primair') : el.volgendeknop).focus();
+}
+
 /**
  * Toont de foutmelding na een mislukte import. Het huidige werk blijft staan.
  * @param {string} bestandsnaam
@@ -430,4 +636,6 @@ el.kiezer.addEventListener('change', () => {
 });
 
 bouwVasteDelen();
+bouwTeller();
+bouwUitzending();
 toonRedactie();

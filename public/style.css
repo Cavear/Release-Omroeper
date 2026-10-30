@@ -364,3 +364,5 @@ button, input, textarea { font: inherit; color: inherit; }
 .stapel { display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
 /* Foutregel onder een invoerveld in de bewerkstand van een kaart. */
 .veld__fout { font-weight: 600; color: var(--error-ink); }
+/* Horizontaal vegen is in de uitzending Volgende; de browser mag dat gebaar niet zelf afhandelen. */
+.uitzending { touch-action: pan-y; }
