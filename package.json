@@ -1,0 +1,19 @@
+{
+  "name": "release-omroeper",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Zet gemergde GitHub-pull requests om in een speels nieuwsjournaal.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "test:unit": "vitest run",
+    "test:ui": "playwright test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "vitest": "^5.0.5"
+  }
+}

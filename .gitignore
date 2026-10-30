@@ -1,7 +1,8 @@
 .env
 .env.*
 !.env.example
-.mcp.json
 config.php
 config.local.php
 node_modules/
+.playwright-mcp/
+test-results/
