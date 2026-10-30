@@ -4,6 +4,7 @@
  * Stap 3.1: concept importeren, controleren en als kaarten tonen; foutmelding, lege staat en laadstaat.
  * Stap 3.2: per kaart goedkeuren, uitsluiten en bewerken; het journaal exporteren.
  * Stap 3.3: teller met Start uitzending; de uitzending met nieuwsframes, Volgende, en het eindscherm.
+ * Stap 3.5: aftelleader 3-2-1, titelkaart en de effectlagen (korrel, vignet, flikkering, krassen) in index.html.
  * @module app
  */
 import {
@@ -20,6 +21,13 @@ const VEEG_MIN = 50;
 const TIJDZONE = 'Europe/Amsterdam';
 const tijdOpmaak = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit', timeZone: TIJDZONE });
 const datumOpmaak = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TIJDZONE });
+const datumLang = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TIJDZONE });
+
+/** Eerste en laatste stap van de uitzending vóór de nieuwsframes. */
+const LEADER = -2;
+const TITELKAART = -1;
+/** Duur van één cijfer van de aftelleader in ms (token --duur-leader). */
+const LEADER_TIK = 1000;
 
 /**
  * De toestand van de redactie. `bewerkt` is het PR-nummer van de kaart in de bewerkstand, of null.
@@ -49,10 +57,11 @@ const el = {
 
 /**
  * De lopende uitzending: de goedgekeurde berichten en welk scherm nu in beeld is.
- * `stap` 0 t/m n-1 is een nieuwsframe, n is het eindscherm.
- * @type {{ berichten: import('./logic.js').Bericht[], stap: number }}
+ * `stap` is LEADER (-2), TITELKAART (-1), 0 t/m n-1 voor een nieuwsframe, of n voor het eindscherm.
+ * `teller` is het cijfer op de leader, `klok` de timer ervan.
+ * @type {{ berichten: import('./logic.js').Bericht[], stap: number, teller: number, klok: number | null }}
  */
-const uz = { berichten: [], stap: 0 };
+const uz = { berichten: [], stap: LEADER, teller: 3, klok: null };
 
 /** Inline SVG-iconen (stroke 1.75, currentColor), altijd naast tekst en verborgen voor schermlezers. */
 const ICONEN = {
@@ -450,9 +459,10 @@ function bouwUitzending() {
 function startUitzending() {
   uz.berichten = selecteerUitzending(staat.berichten);
   if (uz.berichten.length === 0) return;
-  uz.stap = 0;
+  uz.stap = LEADER;
+  uz.teller = 3;
   const koppen = uz.berichten.map((b) => b.kop).join(uitzending.balkScheiding) + uitzending.balkScheiding;
-  // Twee keer dezelfde tekst, zodat de lopende balk (stap 3.5) naadloos doorloopt.
+  // Twee keer dezelfde tekst, zodat de lopende balk naadloos doorloopt.
   el.balkLoop.replaceChildren(maak('span', {}, koppen), maak('span', {}, koppen));
   el.redactie.inert = true;
   el.uitzending.hidden = false;
@@ -463,6 +473,7 @@ function startUitzending() {
 /** Sluit de uitzending en zet de focus terug op Start uitzending. */
 function sluitUitzending() {
   if (el.uitzending.hidden) return;
+  stopLeader();
   el.uitzending.hidden = true;
   el.redactie.inert = false;
   // Het verlaten van volledig scherm verplaatst de focus; zet hem daarna pas terug op Start uitzending.
@@ -471,11 +482,65 @@ function sluitUitzending() {
   else focusOpStart();
 }
 
-/** Gaat naar het volgende scherm van de uitzending. */
+/** Gaat naar het volgende scherm van de uitzending; vanaf de leader is dat de titelkaart (aftellen overslaan). */
 function volgende() {
   if (uz.stap >= uz.berichten.length) return;
+  stopLeader();
   uz.stap += 1;
   toonUitzending();
+}
+
+/** Stopt de klok van de aftelleader. */
+function stopLeader() {
+  clearInterval(uz.klok);
+  uz.klok = null;
+}
+
+/** Start het aftellen 3-2-1; na de 1 volgt vanzelf de titelkaart. Ook bij reduced motion telt hij, alleen zonder puls. */
+function startLeader() {
+  stopLeader();
+  uz.klok = setInterval(() => {
+    if (uz.teller > 1) {
+      uz.teller -= 1;
+      const cijfer = el.frame.querySelector('.leader__cijfer');
+      cijfer.textContent = String(uz.teller);
+      cijfer.setAttribute('aria-label', uitzending.aftellenLabel(uz.teller));
+    } else {
+      volgende();
+    }
+  }, LEADER_TIK);
+}
+
+/**
+ * Maakt de aftelleader: een sepia cirkel met kruisdraden, het cijfer en de knop Aftellen overslaan.
+ * @returns {HTMLElement}
+ */
+function maakLeader() {
+  const wijzer = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  wijzer.setAttribute('class', 'leader__wijzer');
+  wijzer.setAttribute('viewBox', '0 0 400 400');
+  wijzer.setAttribute('aria-hidden', 'true');
+  wijzer.innerHTML = '<g fill="none" stroke="currentColor" stroke-width="2"><circle cx="200" cy="200" r="190"/>'
+    + '<circle cx="200" cy="200" r="150" stroke-width="1"/><path d="M200 0v400M0 200h400" stroke-width="1"/></g>'
+    + '<path d="M200 200L200 10A190 190 0 0 1 390 200z" fill="currentColor" fill-opacity="0.18"/>';
+  const overslaan = maak('button', { type: 'button', class: 'knop leader__overslaan' }, knoppen.aftellenOverslaan);
+  overslaan.addEventListener('click', volgende);
+  return maak('div', { class: 'leader' }, wijzer,
+    maak('div', { class: 'leader__cijfer', role: 'timer', 'aria-live': 'off', 'aria-label': uitzending.aftellenLabel(uz.teller) }, String(uz.teller)),
+    overslaan);
+}
+
+/**
+ * Maakt de titelkaart van de rubriek, met de datum van de release en het aantal berichten.
+ * @returns {HTMLElement}
+ */
+function maakTitelkaart() {
+  const datum = datumLang.format(new Date(staat.concept.periode.van));
+  return maak('div', { class: 'titelkaart' },
+    maak('div', { class: 'titelkaart__inhoud' },
+      maak('p', { class: 'ornament' }, algemeen.merk),
+      maak('h1', {}, uitzending.rubriek),
+      maak('p', {}, uitzending.titelSub(datum, uz.berichten.length))));
 }
 
 /**
@@ -556,9 +621,17 @@ async function kopieerTekst(tekst) {
 function toonUitzending() {
   const n = uz.berichten.length;
   const eind = uz.stap >= n;
-  el.frame.replaceChildren(eind ? maakEindscherm() : maakNieuwsframe(uz.berichten[uz.stap], uz.stap + 1, n));
-  el.balk.hidden = eind;
-  (eind ? el.frame.querySelector('.knop--primair') : el.volgendeknop).focus();
+  const leader = uz.stap === LEADER;
+  let scherm;
+  if (leader) scherm = maakLeader();
+  else if (uz.stap === TITELKAART) scherm = maakTitelkaart();
+  else if (eind) scherm = maakEindscherm();
+  else scherm = maakNieuwsframe(uz.berichten[uz.stap], uz.stap + 1, n);
+  el.frame.replaceChildren(scherm);
+  // De lopende balk met Volgende staat op de titelkaart en de nieuwsframes, niet op de leader en het eindscherm.
+  el.balk.hidden = leader || eind;
+  if (leader) startLeader();
+  (leader ? el.frame.querySelector('.leader__overslaan') : eind ? el.frame.querySelector('.knop--primair') : el.volgendeknop).focus();
 }
 
 /**
