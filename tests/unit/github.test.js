@@ -181,3 +181,24 @@ describe('haalGitHubConcept', () => {
     expect(bericht.status).toBe('meer-info-nodig');
   });
 });
+
+describe('periode in Nederlandse tijd', () => {
+  it('zoekt en bewaart de gekozen dagen in Nederlandse tijd, met winter- en zomertijd', async () => {
+    const leeg = () => vi.fn().mockResolvedValue(antwoord({ total_count: 0, incomplete_results: false, items: [] }));
+    const winter = leeg();
+    const concept = await haalGitHubConcept('a/b', '2026-10-27', '2026-10-28', winter);
+    expect(concept.periode).toEqual({ van: '2026-10-27T00:00:00+01:00', tot: '2026-10-28T23:59:59+01:00' });
+    expect(new URL(winter.mock.calls[0][0]).searchParams.get('q'))
+      .toContain('merged:2026-10-27T00:00:00+01:00..2026-10-28T23:59:59+01:00');
+
+    const zomer = await haalGitHubConcept('a/b', '2026-07-01', '2026-07-01', leeg());
+    expect(zomer.periode).toEqual({ van: '2026-07-01T00:00:00+02:00', tot: '2026-07-01T23:59:59+02:00' });
+  });
+
+  it('neemt een PR die om 00:30 Nederlandse tijd is gemergd mee in die dag', async () => {
+    const concept = await haalGitHubConcept('a/b', '2026-10-28', '2026-10-28', fetcherMet([
+      pr({ number: 9, merged_at: '2026-10-27T23:30:00Z' }),
+    ]));
+    expect(valideerConcept(concept).geldig).toBe(true);
+  });
+});

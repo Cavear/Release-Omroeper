@@ -18,7 +18,13 @@ export const algemeen = {
    * @param {{repository: string, datum: string, van: string, tot: string, gegenereerd: string}} m
    * @returns {string}
    */
-  metaregel: (m) => `${m.repository} · gemergd op ${m.datum} tussen ${m.van} en ${m.tot} · concept van ${m.gegenereerd}`
+  metaregel: (m) => `${m.repository} · gemergd op ${m.datum} tussen ${m.van} en ${m.tot} · concept van ${m.gegenereerd}`,
+  /**
+   * Metaregel bij een periode over meer dagen.
+   * @param {{repository: string, datum: string, totDatum: string, van: string, tot: string, gegenereerd: string}} m
+   * @returns {string}
+   */
+  metaregelPeriode: (m) => `${m.repository} · gemergd tussen ${m.datum} ${m.van} en ${m.totDatum} ${m.tot} · concept van ${m.gegenereerd}`
 };
 
 /** Tekst op knoppen. Dit zijn ook de toegankelijke namen waarop de UI-tests zoeken. */

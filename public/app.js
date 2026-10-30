@@ -294,11 +294,16 @@ async function haalGitHubOp(repository, van, tot, formulier, knop, fout) {
  */
 function maakMetaregel(concept) {
   const van = new Date(concept.periode.van);
-  return algemeen.metaregel({
+  const tot = new Date(concept.periode.tot);
+  const datum = (moment) => datumOpmaak.format(moment).replace('.', '');
+  // Een periode over meer dagen krijgt beide datums.
+  const regel = datum(van) === datum(tot) ? algemeen.metaregel : algemeen.metaregelPeriode;
+  return regel({
     repository: concept.repository,
-    datum: datumOpmaak.format(van).replace('.', ''),
+    datum: datum(van),
+    totDatum: datum(tot),
     van: tijdOpmaak.format(van),
-    tot: tijdOpmaak.format(new Date(concept.periode.tot)),
+    tot: tijdOpmaak.format(tot),
     gegenereerd: concept.gegenereerdOp ? tijdOpmaak.format(new Date(concept.gegenereerdOp)) : algemeen.onbekendeTijd,
   });
 }

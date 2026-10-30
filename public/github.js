@@ -28,6 +28,24 @@ function isDatum(waarde) {
   return !Number.isNaN(datum.valueOf()) && datum.toISOString().slice(0, 10) === waarde;
 }
 
+/** De gekozen dagen gelden in Nederlandse tijd, net als de tijden in de redactie. */
+const TIJDZONE = 'Europe/Amsterdam';
+const afwijkingOpmaak = new Intl.DateTimeFormat('en-US', { timeZone: TIJDZONE, timeZoneName: 'longOffset' });
+
+/**
+ * Maakt een tijdstip in Nederlandse tijd met de UTC-afwijking van die dag (winter- of zomertijd).
+ * @param {string} datum JJJJ-MM-DD
+ * @param {string} tijd UU:MM:SS
+ * @returns {string} Bijvoorbeeld 2026-10-27T00:00:00+01:00
+ */
+function lokaalTijdstip(datum, tijd) {
+  // De afwijking rond het middaguur van die dag; een wissel van zomer- naar wintertijd valt 's nachts.
+  const naam = afwijkingOpmaak.formatToParts(new Date(`${datum}T12:00:00Z`))
+    .find((deel) => deel.type === 'timeZoneName').value;
+  const afwijking = naam === 'GMT' ? '+00:00' : naam.slice(3);
+  return `${datum}T${tijd}${afwijking}`;
+}
+
 /** Maximale lengte van een kop, zodat hij in de uitzending binnen beeld past. */
 const MAX_KOP = 90;
 /** Maximale lengte van de overgenomen uitleg. */
@@ -109,8 +127,10 @@ export async function haalGitHubConcept(repository, van, tot, fetcher = globalTh
   if (!isDatum(van) || !isDatum(tot) || van > tot) throw new GitHubFout('periode');
 
   const [eigenaar, naam] = repository.split('/');
+  const begin = lokaalTijdstip(van, '00:00:00');
+  const eind = lokaalTijdstip(tot, '23:59:59');
   const zoek = new URLSearchParams({
-    q: `repo:${repository} is:pr is:merged merged:${van}..${tot}`,
+    q: `repo:${repository} is:pr is:merged merged:${begin}..${eind}`,
     per_page: '100',
   });
   const resultaat = await haalJson(`https://api.github.com/search/issues?${zoek}`, fetcher);
@@ -149,7 +169,7 @@ export async function haalGitHubConcept(repository, van, tot, fetcher = globalTh
 
   return {
     repository,
-    periode: { van: `${van}T00:00:00Z`, tot: `${tot}T23:59:59Z` },
+    periode: { van: begin, tot: eind },
     gegenereerdOp: new Date().toISOString(),
     berichten,
   };
