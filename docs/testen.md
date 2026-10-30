@@ -38,7 +38,23 @@ Op mobiel (390×844), tablet (768×1024) en desktop (1440×900); de uitzending o
 
 ## Testdata
 
-In `testdata/`. `voorbeeld.json` bevat 3 geldige berichten. *Volgt:* de gegenereerde geldige en foute bestanden.
+In `testdata/`. `voorbeeld.json` bevat 3 geldige berichten en is met de hand gemaakt.
+
+`npm run testdata` (script `scripts/genereer-testdata.js`) maakt de andere 9 bestanden. Elk fout bestand breekt precies één regel van het contract:
+
+| Bestand | Wat erin zit |
+|---|---|
+| `geldig-5-berichten.json` | 5 geldige berichten (het maximum) |
+| `geldig-met-meer-info.json` | 3 geldige berichten, waarvan één `meer-info-nodig` en één `goedgekeurd` |
+| `fout-ontbrekend-veld.json` | bericht 2 heeft geen `kop` |
+| `fout-verkeerde-url.json` | bericht 3 linkt naar een ander PR-nummer |
+| `fout-6-berichten.json` | 6 berichten |
+| `fout-dubbel-prnummer.json` | bericht 3 heeft hetzelfde PR-nummer als bericht 1 |
+| `fout-buiten-periode.json` | bericht 2 is gemergd na het einde van de periode |
+| `fout-geen-json.txt` | gewone tekst, geen JSON |
+| `leeg.json` | een leeg bestand |
+
+Verandert het contract, pas dan de generator aan en draai `npm run testdata` opnieuw. Een unit-test controleert dat de bestanden in `testdata/` gelijk zijn aan wat de generator maakt.
 
 ## Testbewijs
 

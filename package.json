@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "test:unit": "vitest run",
     "test:ui": "playwright test tests/ui",
-    "test:smoke": "playwright test tests/smoke"
+    "test:smoke": "playwright test tests/smoke",
+    "testdata": "node scripts/genereer-testdata.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
