@@ -1,6 +1,11 @@
 import { test, expect } from 'vitest';
-import { kiesStem, leesTijd, kanVoorlezen } from '../../public/voorlezer.js';
+import { kiesStem, leesTijd, kanVoorlezen, STEM } from '../../public/voorlezer.js';
 import { voorlezen } from '../../public/teksten.js';
+
+test('de omroeper spreekt twee keer zo snel als eerst (0,9 en 0,82)', () => {
+  expect(STEM.tempo).toBeCloseTo(1.8);
+  expect(STEM.kopTempo).toBeCloseTo(1.64);
+});
 
 const stem = (name, lang) => ({ name, lang });
 
