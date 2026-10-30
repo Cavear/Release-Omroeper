@@ -1,0 +1,62 @@
+{
+  "repository": "Cavear/Release-Omroeper",
+  "periode": { "van": "2026-10-30T00:00:00+01:00", "tot": "2026-10-30T23:59:59+01:00" },
+  "gegenereerdOp": "2026-10-30T12:04:54Z",
+  "berichten": [
+    {
+      "prNummer": 11,
+      "bronUrl": "https://github.com/Cavear/Release-Omroeper/pull/11",
+      "origineleTitel": "Import en kaarten (stap 3.1)",
+      "gemergdOp": "2026-10-30T11:18:27+01:00",
+      "kop": "Dames en heren: het concept rolt de redactie binnen",
+      "uitleg": "Met Concept importeren lees je journaal-concept.json in; de app controleert het bestand en toont per bericht een kaart. Bij een fout wordt er niets geladen en zie je wat er mis is.",
+      "voorWie": "De redactie die het journaal voorbereidt",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 12,
+      "bronUrl": "https://github.com/Cavear/Release-Omroeper/pull/12",
+      "origineleTitel": "Redactie-acties en export (stap 3.2)",
+      "gemergdOp": "2026-10-30T11:24:09+01:00",
+      "kop": "Goedkeuren, schrappen en bijschaven aan de redactietafel",
+      "uitleg": "Per kaart kun je een bericht goedkeuren, uitsluiten of de kop en uitleg bewerken. Met Journaal exporteren sla je het nagekeken journaal op als bestand.",
+      "voorWie": "De redactie die het journaal voorbereidt",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 13,
+      "bronUrl": "https://github.com/Cavear/Release-Omroeper/pull/13",
+      "origineleTitel": "Uitzendstand, functioneel (stap 3.3)",
+      "gemergdOp": "2026-10-30T11:31:04+01:00",
+      "kop": "Het doek gaat op: de uitzending is begonnen",
+      "uitleg": "Start uitzending toont de goedgekeurde berichten één voor één op volledig scherm; Volgende werkt met de knop, het pijltje rechts of vegen. Aan het eind staat een totaaloverzicht om te kopiëren.",
+      "voorWie": "Iedereen die naar de releasepresentatie kijkt",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 15,
+      "bronUrl": "https://github.com/Cavear/Release-Omroeper/pull/15",
+      "origineleTitel": "Bioscoopeffecten uitzending (stap 3.5)",
+      "gemergdOp": "2026-10-30T11:42:28+01:00",
+      "kop": "Filmkorrel, krassen en een aftelleader: echt bioscoop",
+      "uitleg": "De uitzending begint met een aftelleader 3-2-1 en een titelkaart, met filmkorrel, vignet, flikkering en krassen. Wie in het systeem minder beweging heeft ingesteld, ziet geen animaties.",
+      "voorWie": "Iedereen die naar de releasepresentatie kijkt",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    },
+    {
+      "prNummer": 17,
+      "bronUrl": "https://github.com/Cavear/Release-Omroeper/pull/17",
+      "origineleTitel": "Uitleg in de app (stap 3.8)",
+      "gemergdOp": "2026-10-30T11:52:34+01:00",
+      "kop": "De redactie krijgt een eigen souffleur",
+      "uitleg": "Via Help of de toets ? staat alle uitleg per status en per knop op één plek, en bij elk statuslabel staat een uitleg-icoon. Er is ook een gebruikershandleiding.",
+      "voorWie": "Wie de app voor het eerst gebruikt",
+      "status": "concept",
+      "publicatiestatus": "niet gecontroleerd"
+    }
+  ]
+}
