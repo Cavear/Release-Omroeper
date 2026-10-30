@@ -1,0 +1,48 @@
+# CI/CD van de Release-omroeper.
+# Job test (stap 1.1): lint en unit-tests bij een pull request naar test of main.
+# Job smoke (stap 1.4): handmatig starten (Run workflow) na een upload met FileZilla.
+# Er is geen deploy-job: de upload naar STRATO gebeurt handmatig.
+name: ci-cd
+
+on:
+  pull_request:
+    branches: [test, main]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'URL om te controleren'
+        default: 'http://app1-test.caitlinveenendaal.nl/'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test:unit
+
+  smoke:
+    name: smoke
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ inputs.base_url || vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:smoke

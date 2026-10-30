@@ -13,7 +13,7 @@ De grap zit altijd in de kop, nooit over personen. Een bericht is pas klaar als 
 
 ## Snel starten
 
-Je hebt Node.js 20 of nieuwer nodig.
+Je hebt Node.js 22.12 of nieuwer nodig.
 
 ```bash
 npm install
