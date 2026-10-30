@@ -48,8 +48,8 @@ Het nagekeken journaal dat de app exporteert (*Journaal exporteren*, `journaal-n
 | `bronUrl` | tekst (URL) | ja | Link naar de pull request |
 | `origineleTitel` | tekst | ja | De titel van de PR, ongewijzigd |
 | `gemergdOp` | ISO 8601-tijd | nee | Moment van mergen |
-| `kop` | tekst | ja | De licht komische kop; de grap zit hier, nooit over personen |
-| `uitleg` | tekst | ja | Zakelijke uitleg van wat er veranderd is |
+| `kop` | tekst | ja | De licht komische kop; bij direct ophalen uit GitHub is de PR-titel (max. 90 tekens) een voorlopige kop die de redactie controleert en zo nodig herschrijft. De grap zit nooit over personen |
+| `uitleg` | tekst | ja | Zakelijke uitleg van wat er veranderd is; direct ophalen neemt de eerste alinea van de PR-beschrijving over (max. 280 tekens), die onvolledig kan zijn |
 | `voorWie` | tekst | nee | Voor wie de wijziging van belang is; ontbreekt hij, dan toont de app *Voor: nog onbekend* |
 | `status` | tekst | ja | `concept`, `meer-info-nodig`, `goedgekeurd` of `uitgesloten` |
 | `publicatiestatus` | tekst | nee | Altijd `niet gecontroleerd` zolang een mens het bericht niet heeft nagelopen |
@@ -58,7 +58,7 @@ Het nagekeken journaal dat de app exporteert (*Journaal exporteren*, `journaal-n
 
 | Status | Betekenis | In de uitzending? |
 |---|---|---|
-| `concept` | Door Claude geschreven, nog niet nagekeken | nee |
+| `concept` | Automatisch opgesteld of opgehaald, nog niet nagekeken | nee |
 | `meer-info-nodig` | De PR geeft te weinig informatie voor een goede uitleg | nee |
 | `goedgekeurd` | Nagekeken en goed bevonden door de redactie | ja |
 | `uitgesloten` | Komt bewust niet in het journaal | nee |
