@@ -62,6 +62,27 @@ const PR_S = [
 ];
 
 /**
+ * Vult de lijst aan met eenvoudige PR's (#48 en verder), voor een concept met meer berichten dan het maximum.
+ * Ze zijn om de 5 minuten gemergd vanaf 09:20, binnen de periode.
+ * @param {number} n het totale aantal PR's
+ * @returns {typeof PR_S}
+ */
+function prs(n) {
+  const extra = Array.from({ length: Math.max(0, n - PR_S.length) }, (_, i) => {
+    const minuten = 20 + i * 5;
+    const tijd = `${String(9 + Math.floor(minuten / 60)).padStart(2, '0')}:${String(minuten % 60).padStart(2, '0')}`;
+    return {
+      prNummer: 48 + i,
+      origineleTitel: `Small fix ${i + 1}`,
+      gemergdOp: `2026-10-30T${tijd}:00+01:00`,
+      kop: `Kleine reparatie nummer ${i + 1}`,
+      uitleg: 'Een kleine verbetering in de webshop.',
+    };
+  });
+  return [...PR_S, ...extra].slice(0, n);
+}
+
+/**
  * Maakt een geldig bericht van een PR uit de lijst.
  * @param {(typeof PR_S)[number]} pr de fictieve PR waar het bericht over gaat
  * @param {string} [status] de status van het bericht, standaard concept
@@ -83,7 +104,7 @@ function bericht(pr, status = 'concept') {
 
 /**
  * Maakt een geldig concept met de eerste n PR's.
- * @param {number} n het aantal berichten (1 tot en met 6)
+ * @param {number} n het aantal berichten
  * @returns {{ repository: string, periode: typeof PERIODE, gegenereerdOp: string, berichten: Record<string, any>[] }}
  */
 function concept(n) {
@@ -91,7 +112,7 @@ function concept(n) {
     repository: REPOSITORY,
     periode: { ...PERIODE },
     gegenereerdOp: '2026-10-30T12:15:00Z',
-    berichten: PR_S.slice(0, n).map((pr) => bericht(pr)),
+    berichten: prs(n).map((pr) => bericht(pr)),
   };
 }
 
@@ -130,7 +151,7 @@ export function maakTestdata() {
     'geldig-met-meer-info.json': alsJson(metMeerInfo),
     'fout-ontbrekend-veld.json': alsJson(ontbrekendVeld),
     'fout-verkeerde-url.json': alsJson(verkeerdeUrl),
-    'fout-6-berichten.json': alsJson(concept(6)),
+    'fout-21-berichten.json': alsJson(concept(21)),
     'fout-dubbel-prnummer.json': alsJson(dubbelNummer),
     'fout-buiten-periode.json': alsJson(buitenPeriode),
     'fout-geen-json.txt': 'Dit is geen JSON, maar een kladbriefje van de redactie.\n',

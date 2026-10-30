@@ -111,9 +111,11 @@ export const leeg = {
 /** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
 export const github = {
   kop: 'Gemergde PR’s ophalen',
-  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. Bij meer dan vijf resultaten wordt niets ingeladen; verklein dan de periode. Elke PR krijgt een journaalkop op basis van de titel en de beschrijving als uitleg, als ongekeurd concept; controleer en redigeer ze voordat je goedkeurt.',
+  intro: 'Haal maximaal twintig gemergde pull requests op uit een publieke repository. Zijn het er meer, dan krijg je de twintig meest recente. Elke PR krijgt een journaalkop op basis van de titel en de beschrijving als uitleg, als ongekeurd concept; controleer en redigeer ze voordat je goedkeurt.',
   repositoryLabel: 'Repository (owner/repo)',
   repositoryVoorbeeld: 'Cavear/vibe_webshop',
+  /** Staat ingevuld zolang er nog geen andere repository is gebruikt. */
+  standaardRepository: 'Cavear/vibe_webshop',
   vanLabel: 'Gemergd vanaf',
   totLabel: 'Gemergd tot en met',
   ophalen: 'Pull requests ophalen',
@@ -172,10 +174,11 @@ export const github = {
   },
   /** @param {number} n @returns {string} */
   opgehaald: (n) => `${n} ${n === 1 ? 'bericht opgehaald' : 'berichten opgehaald'} uit GitHub`,
+  /** @param {number} n @param {number} totaal @returns {string} */
+  nieuwsteVan: (n, totaal) => `De ${n} meest recente van ${totaal} gemergde PR’s opgehaald uit GitHub`,
   fouten: {
     repository: 'Vul de repository in als eigenaar/naam.',
     periode: 'Kies een geldige periode; de begindatum mag niet na de einddatum liggen.',
-    teVeel: 'Meer dan vijf PR’s gevonden. Verklein de periode; er wordt niets ingeladen.',
     netwerk: 'GitHub is niet bereikbaar. Controleer je verbinding en probeer opnieuw.',
     'privé': 'Repository niet gevonden of niet openbaar. De browserkoppeling kan alleen publieke repositories ophalen.',
     limiet: 'GitHub heeft te veel verzoeken ontvangen. Wacht even en probeer opnieuw.',
@@ -222,7 +225,7 @@ export const fouten = {
   /** @param {string} veld @returns {string} */
   ontbreekt: (veld) => `het verplichte veld ${veld} ontbreekt`,
   /** @param {number} n @returns {string} */
-  teVeel: (n) => `Het bestand heeft ${n} berichten; het maximum is 5.`,
+  teVeel: (n) => `Het bestand heeft ${n} berichten; het maximum is 20.`,
   /** @param {number} nr @returns {string} */
   dubbelNummer: (nr) => `PR-nummer ${nr} komt vaker voor; elk bericht moet een eigen PR-nummer hebben`,
   /** @param {string} repository @param {number} nr @returns {string} */
@@ -249,7 +252,7 @@ export const help = {
   statussenKop: 'DE VIER STATUSSEN',
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
-    { naam: 'GitHub ophalen', uitleg: 'haal maximaal vijf gemergde PR’s op uit een publieke repository. Kop en uitleg blijven ongekeurd tot je ze controleert.' },
+    { naam: 'GitHub ophalen', uitleg: 'haal maximaal twintig gemergde PR’s op uit een publieke repository; zijn het er meer, dan de twintig meest recente. Kop en uitleg blijven ongekeurd tot je ze controleert.' },
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
     { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
     { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
@@ -267,7 +270,7 @@ export const help = {
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
   conceptKop: 'HET CONCEPTBESTAND',
-  conceptTekst: 'Je kunt zelf een conceptbestand importeren of maximaal vijf gemergde PR’s uit een publieke GitHub-repository ophalen. De directe koppeling maakt een journaalkop met een vaste opener bij de PR-titel, neemt de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving of met een vage titel krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
+  conceptTekst: 'Je kunt zelf een conceptbestand importeren of tot twintig gemergde PR’s (de meest recente) uit een publieke GitHub-repository ophalen. De directe koppeling maakt een journaalkop met een vaste opener bij de PR-titel, neemt de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving of met een vage titel krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
   publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen maakt de app een journaalkop van de titel en neemt de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
   handleiding: 'Naar de gebruikershandleiding',

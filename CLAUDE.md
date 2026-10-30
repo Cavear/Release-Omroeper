@@ -172,7 +172,7 @@ Koppen schalen met `clamp(1.75rem, min(6.4vw, 11vh), 4.75rem)`. Een kop van 90 t
 
 ## Contract (samenvatting; de volledige regels staan in `docs/contract.md`)
 
-Statussen: `concept`, `meer-info-nodig`, `goedgekeurd`, `uitgesloten`. Maximaal 5 berichten, `prNummer` uniek, `bronUrl` = `https://github.com/<repository>/pull/<prNummer>`, `gemergdOp` binnen de periode. Bij een fout wordt niets geladen. `valideerConcept` geeft `{ geldig, fouten: [{ bericht: number|null, veld, melding }] }`; de UI toont `melding` uit `teksten.fouten`.
+Statussen: `concept`, `meer-info-nodig`, `goedgekeurd`, `uitgesloten`. Maximaal 20 berichten, `prNummer` uniek, `bronUrl` = `https://github.com/<repository>/pull/<prNummer>`, `gemergdOp` binnen de periode. Bij een fout wordt niets geladen. `valideerConcept` geeft `{ geldig, fouten: [{ bericht: number|null, veld, melding }] }`; de UI toont `melding` uit `teksten.fouten`.
 
 ## Werkwijze per stap
 

@@ -25,14 +25,12 @@ test.describe('GitHub ophalen', () => {
     await page.route('https://api.github.com/**', async (route) => {
       const url = new URL(route.request().url());
       if (url.pathname === '/search/issues') {
-        await route.fulfill({ json: { total_count: 1, incomplete_results: false, items: [{ number: 42 }] } });
-      } else if (url.pathname.endsWith('/pulls/42')) {
-        await route.fulfill({ json: {
+        await route.fulfill({ json: { total_count: 1, incomplete_results: false, items: [{
           number: 42,
           title: 'Zoeken in producten',
           body: 'De productlijst kan nu worden doorzocht.',
-          merged_at: '2026-10-29T12:30:00Z',
-        } });
+          pull_request: { merged_at: '2026-10-29T12:30:00Z' },
+        }] } });
       } else {
         await route.fulfill({ status: 404, json: {} });
       }
@@ -54,6 +52,37 @@ test.describe('GitHub ophalen', () => {
     await expect(page.locator('#melding')).toContainText('1 bericht opgehaald uit GitHub');
   });
 
+  test('de repository staat standaard op Cavear/vibe_webshop', async ({ page }) => {
+    await page.goto('./');
+    await page.getByRole('button', { name: 'GitHub ophalen' }).first().click();
+    const dialoog = page.getByRole('dialog', { name: 'Gemergde PR’s ophalen' });
+    await expect(dialoog.getByLabel('Repository (owner/repo)')).toHaveValue('Cavear/vibe_webshop');
+  });
+
+  test('bij meer dan twintig PR’s komen de twintig meest recente binnen', async ({ page }) => {
+    // 23 PR's: PR n is gemergd op 29 oktober om n minuten over 8 (UTC).
+    const items = Array.from({ length: 23 }, (_, i) => ({
+      number: i + 1, title: `PR nummer ${i + 1}`, body: 'Uitleg.',
+      pull_request: { merged_at: `2026-10-29T08:${String(i + 1).padStart(2, '0')}:00Z` },
+    }));
+    await page.route('https://api.github.com/**', (route) => route.fulfill({
+      json: { total_count: items.length, incomplete_results: false, items },
+    }));
+
+    await page.goto('./');
+    await page.getByRole('button', { name: 'GitHub ophalen' }).first().click();
+    const dialoog = page.getByRole('dialog', { name: 'Gemergde PR’s ophalen' });
+    await dialoog.getByLabel('Gemergd vanaf').fill('2026-10-29');
+    await dialoog.getByLabel('Gemergd tot en met').fill('2026-10-30');
+    await dialoog.getByRole('button', { name: 'Pull requests ophalen' }).click();
+
+    await expect(page.getByTestId('kaart')).toHaveCount(20);
+    await expect(page.locator('#melding')).toContainText('De 20 meest recente van 23 gemergde PR’s opgehaald uit GitHub');
+    // De oudste drie vallen af, de nieuwste staat bovenaan.
+    await expect(page.getByTestId('kaart').first()).toContainText('PR #23');
+    await expect(page.getByTestId('kaart').filter({ hasText: 'PR #3 ' })).toHaveCount(0);
+  });
+
   test('laadt niets als de repository niet openbaar is', async ({ page }) => {
     await page.route('https://api.github.com/**', (route) => route.fulfill({ status: 422, json: { message: 'Validation Failed' } }));
 
@@ -73,10 +102,12 @@ test.describe('GitHub ophalen', () => {
     await page.route('https://api.github.com/**', async (route) => {
       const url = new URL(route.request().url());
       if (url.pathname === '/search/issues') {
-        await route.fulfill({ json: { total_count: 1, incomplete_results: false, items: [{ number: 5 }] } });
-      } else {
         // Buiten de gekozen periode gemergd: valideerConcept keurt dit af.
-        await route.fulfill({ json: { number: 5, title: 'Iets', body: 'Uitleg.', merged_at: '2026-11-05T12:00:00Z' } });
+        await route.fulfill({ json: { total_count: 1, incomplete_results: false, items: [
+          { number: 5, title: 'Iets', body: 'Uitleg.', pull_request: { merged_at: '2026-11-05T12:00:00Z' } },
+        ] } });
+      } else {
+        await route.fulfill({ status: 404, json: {} });
       }
     });
 
