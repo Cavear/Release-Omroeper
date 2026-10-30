@@ -17,7 +17,7 @@ const STATUSSEN = {
 const KNOPPEN = [
   'Concept importeren', 'Help', 'Goedkeuren', 'Terug naar concept', 'Uitsluiten', 'Weer opnemen', 'Bewerken',
   'Bron openen', 'Start uitzending', 'Journaal exporteren', 'Aftellen overslaan', 'Uitzending sluiten',
-  'Kopieer overzicht', 'Terug naar de redactie',
+  'Kopieer overzicht', 'Terug naar de redactie', 'Pauzeren', 'Volgende', 'Geluid uit',
 ];
 
 /**
