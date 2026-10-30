@@ -12,7 +12,7 @@ export const algemeen = {
   publicatieUitleg: 'Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.',
   onbekendeTijd: '–',
   handleidingLink: 'Lees de gebruikershandleiding',
-  handleidingUrl: 'docs/gebruikershandleiding.md',
+  handleidingUrl: 'handleiding.html',
   /**
    * Metaregel onder de paginakop.
    * @param {{repository: string, datum: string, van: string, tot: string, gegenereerd: string}} m
@@ -159,15 +159,24 @@ export const help = {
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
-    { naam: 'Goedkeuren / Uitsluiten', uitleg: 'bepaal wat er wordt uitgezonden.' },
+    { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
+    { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
+    { naam: 'Uitsluiten / Weer opnemen', uitleg: 'laat een bericht bewust weg, of zet het terug op concept. Een uitgesloten bericht keur je pas goed na Weer opnemen.' },
     { naam: 'Bewerken', uitleg: 'pas kop en uitleg aan, met Opslaan of Annuleren.' },
     { naam: 'Bron openen', uitleg: 'bekijk de pull request op GitHub in een nieuw tabblad.' },
     { naam: 'Start uitzending', uitleg: 'volledig scherm, één bericht tegelijk. Volgende met de knop, pijltje rechts of vegen; Esc sluit af.' },
-    { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' }
+    { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' },
+    { naam: 'Aftellen overslaan', uitleg: 'gaat in de uitzending meteen van de aftelleader naar de titelkaart.' },
+    { naam: 'Uitzending sluiten', uitleg: 'brengt je terug naar de redactie (ook met Esc).' },
+    { naam: 'Kopieer overzicht', uitleg: 'zet op het eindscherm alle koppen, uitleg en links op je klembord.' },
+    { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
+  conceptKop: 'HET CONCEPTBESTAND',
+  conceptTekst: 'Claude maakt journaal-concept.json met de skill /journaal: per gemergde pull request een grappige kop, een zakelijke uitleg en een link naar de bron. De app controleert het bestand bij het importeren. Klopt er iets niet, dan zie je per bericht en veld wat er mis is en wordt er niets geladen.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
   publicatieTekst: 'Claude schreef de koppen en uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat dit onder elk bericht, ook in de uitzending.',
-  handleiding: 'Naar de gebruikershandleiding'
+  handleiding: 'Naar de gebruikershandleiding',
+  sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };
 
 /** Uitzending. */

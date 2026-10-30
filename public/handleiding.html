@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gebruikershandleiding · Release-omroeper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Playfair+Display:wght@400;700&family=Source+Serif+4:wght@400;600&family=Special+Elite&display=swap">
+    <link rel="stylesheet" href="style.css">
+</head>
+<!-- Zelfde inhoud als docs/gebruikershandleiding.md; pas bij een wijziging beide aan. -->
+<body data-thema="redactie">
+    <div class="pagina handleiding">
+        <header class="kopbalk">
+            <div class="kopbalk__tekst">
+                <p class="onderschrift">HET RELEASE-BIOSCOOPJOURNAAL</p>
+                <h1 class="pagina-kop">Gebruikershandleiding</h1>
+                <p class="kopbalk__meta">Van gemergde pull requests naar een kort journaal om aan het team te presenteren.</p>
+            </div>
+            <div class="knoppenrij">
+                <a class="knop" href="index.html">Terug naar de redactie</a>
+            </div>
+        </header>
+
+        <main class="stapel">
+            <section class="stapel" aria-labelledby="h-concept">
+                <h2 id="h-concept">1. Het concept laten maken</h2>
+                <p>Vraag Claude Code om <code>/journaal</code> voor een repository en een periode. Claude leest de gemergde pull requests (alleen lezen) en schrijft <code>journaal-concept.json</code>: per PR een licht grappige kop, een zakelijke uitleg, voor wie het belangrijk is en een link naar de PR. Maximaal vijf berichten.</p>
+            </section>
+
+            <section class="stapel" aria-labelledby="h-import">
+                <h2 id="h-import">2. Het concept importeren</h2>
+                <p>Kies <strong>Concept importeren</strong> en selecteer <code>journaal-concept.json</code>. De app controleert het bestand.</p>
+                <ul>
+                    <li><strong>Klopt het</strong>, dan zie je per bericht een kaart en de melding <em>n berichten ingeladen</em>.</li>
+                    <li><strong>Klopt het niet</strong>, dan zie je <em>Dit bestand is niet ingeladen</em> met per fout het bericht en het veld. Er wordt niets geladen en je huidige werk blijft zoals het was. Pas het bestand aan en kies opnieuw Concept importeren.</li>
+                    <li>Heb je al werk, dan vraagt de app eerst of het nieuwe concept dat mag vervangen.</li>
+                </ul>
+            </section>
+
+            <section class="stapel" aria-labelledby="h-nakijken">
+                <h2 id="h-nakijken">3. De berichten nakijken</h2>
+                <p>Loop elk bericht na tegen de bron: <strong>Bron openen</strong> opent de pull request in een nieuw tabblad.</p>
+                <dl class="stapel">
+                    <div><dt><strong>Goedkeuren / Terug naar concept</strong></dt><dd>Zet het bericht in of uit de uitzending.</dd></div>
+                    <div><dt><strong>Uitsluiten / Weer opnemen</strong></dt><dd>Laat het bericht bewust weg, of zet het terug op concept. Een uitgesloten bericht kun je pas goedkeuren na Weer opnemen.</dd></div>
+                    <div><dt><strong>Bewerken</strong></dt><dd>Pas kop en uitleg aan, met Opslaan of Annuleren (Esc). Een lege kop of uitleg kan niet.</dd></div>
+                    <div><dt><strong>Bron openen</strong></dt><dd>Bekijk de pull request op GitHub.</dd></div>
+                </dl>
+                <p>Het ⓘ-icoon naast een statuslabel geeft een korte uitleg. <strong>Help</strong> (of de toets <kbd>?</kbd>) toont alle uitleg op één plek. Onderaan staat de teller, bijvoorbeeld <em>2 van 5 goedgekeurd</em>, en na elke actie verschijnt kort een melding.</p>
+            </section>
+
+            <section class="stapel" aria-labelledby="h-statussen">
+                <h2 id="h-statussen">De vier statussen</h2>
+                <dl class="stapel">
+                    <div><dt><span class="label label--concept">concept</span></dt><dd>Nog niet nagekeken. Komt niet in de uitzending.</dd></div>
+                    <div><dt><span class="label label--meer-info-nodig">meer informatie nodig</span></dt><dd>De PR is te vaag om uit te leggen. Vraag de maker om uitleg, pas het bericht aan en keur het daarna goed.</dd></div>
+                    <div><dt><span class="label label--goedgekeurd">goedgekeurd</span></dt><dd>Nagekeken en klaar. Alleen deze berichten komen in de uitzending.</dd></div>
+                    <div><dt><span class="label label--uitgesloten">uitgesloten</span></dt><dd>Bewust weggelaten. Met Weer opnemen zet je het terug op concept.</dd></div>
+                </dl>
+            </section>
+
+            <section class="handleiding__blok stapel" aria-labelledby="h-publicatie">
+                <h2 id="h-publicatie">Publicatiestatus: niet gecontroleerd</h2>
+                <p>Claude schrijft de koppen en de uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat <em>Publicatiestatus: niet gecontroleerd</em> bij elk bericht, ook in de uitzending. Gemergd betekent niet automatisch gepubliceerd.</p>
+            </section>
+
+            <section class="stapel" aria-labelledby="h-uitzending">
+                <h2 id="h-uitzending">4. De uitzending</h2>
+                <p>Kies <strong>Start uitzending</strong>; dat kan pas als er minstens één bericht is goedgekeurd. Op volledig scherm volgt:</p>
+                <ol>
+                    <li>een aftelleader 3-2-1 (<strong>Aftellen overslaan</strong> slaat hem over);</li>
+                    <li>de titelkaart <em>Uit de werkplaats</em>;</li>
+                    <li>per goedgekeurd bericht één scherm met kop, uitleg en bron;</li>
+                    <li>het eindscherm met het totaaloverzicht.</li>
+                </ol>
+                <p><strong>Volgende</strong> met de knop, het pijltje rechts of door naar links te vegen. <kbd>Esc</kbd> of <strong>Uitzending sluiten</strong> brengt je terug naar de redactie. <strong>Kopieer overzicht</strong> kopieert de koppen, uitleg en links; lukt dat niet (bijvoorbeeld zonder HTTPS), dan selecteert de app de tekst zodat je hem zelf kopieert.</p>
+            </section>
+
+            <section class="stapel" aria-labelledby="h-export">
+                <h2 id="h-export">5. Het journaal exporteren</h2>
+                <p><strong>Journaal exporteren</strong> slaat het nagekeken journaal op als <code>journaal-nagekeken.json</code>, met je aangepaste koppen en statussen. Dat bestand kun je later opnieuw importeren om verder te werken.</p>
+                <p>Werk gaat niet ongemerkt verloren: staat er nog een niet-opgeslagen wijziging open, dan vraagt de app eerst of je toch wilt exporteren, en wie het tabblad sluit met werk dat nog niet is geëxporteerd, krijgt een waarschuwing van de browser.</p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
