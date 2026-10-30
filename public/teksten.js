@@ -10,6 +10,7 @@ export const algemeen = {
   redactieKop: 'De redactietafel',
   publicatiestatus: 'Publicatiestatus: niet gecontroleerd',
   publicatieUitleg: 'Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.',
+  onbekendeTijd: '–',
   handleidingLink: 'Lees de gebruikershandleiding',
   handleidingUrl: 'docs/gebruikershandleiding.md',
   /**
@@ -58,6 +59,8 @@ export const statussen = {
 export const kaart = {
   /** @param {number} nr @param {string} tijd @returns {string} */
   meta: (nr, tijd) => `PR #${nr} · gemergd ${tijd}`,
+  /** @param {number} nr @returns {string} */
+  metaZonderTijd: (nr) => `PR #${nr}`,
   origineel: 'Origineel:',
   voor: 'Voor:',
   voorOnbekend: 'nog onbekend',
@@ -101,7 +104,8 @@ export const meldingen = {
   opgeslagen: (nr) => `Wijziging in bericht #${nr} opgeslagen`,
   geexporteerd: 'Journaal opgeslagen als journaal-nagekeken.json',
   gekopieerd: 'Het totaaloverzicht staat op je klembord.',
-  kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.'
+  kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
+  importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
@@ -115,6 +119,7 @@ export const fouten = {
   oplossing: 'Pas het bestand aan en kies opnieuw Concept importeren.',
   geenJson: 'Het bestand is geen geldige JSON. Kies het bestand journaal-concept.json dat Claude heeft gemaakt.',
   leeg: 'Het bestand is leeg.',
+  nietLeesbaar: 'Het bestand kon niet worden gelezen. Kies het bestand opnieuw.',
   /** @param {string} veld @returns {string} */
   ontbreekt: (veld) => `het verplichte veld ${veld} ontbreekt`,
   /** @param {number} n @returns {string} */
@@ -134,7 +139,9 @@ export const fouten = {
    * @param {{bericht: number|null, veld: string, melding: string}} f
    * @returns {string}
    */
-  regel: (f) => (f.bericht === null ? f.melding : `Bericht ${f.bericht}, veld ${f.veld}: ${f.melding}`)
+  regel: (f) => (f.bericht === null
+    ? f.melding.charAt(0).toUpperCase() + f.melding.slice(1)
+    : `Bericht ${f.bericht}, veld ${f.veld}: ${f.melding}`)
 };
 
 /** Help-paneel. */

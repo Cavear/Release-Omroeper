@@ -4,13 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Release-omroeper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Playfair+Display:wght@400;700&family=Source+Serif+4:wght@400;600&family=Special+Elite&display=swap">
     <link rel="stylesheet" href="style.css">
     <script type="module" src="app.js"></script>
 </head>
 <body>
-    <header>
-        <h1>Release-omroeper</h1>
-    </header>
-    <main id="app"></main>
+    <!-- Alle zichtbare tekst komt uit teksten.js; app.js vult deze structuur. -->
+    <section id="redactie" data-thema="redactie">
+        <div class="pagina">
+            <header class="kopbalk">
+                <div class="kopbalk__tekst">
+                    <p class="onderschrift" id="merk"></p>
+                    <h1 class="pagina-kop" id="redactie-kop"></h1>
+                    <p class="kopbalk__meta" id="metaregel" hidden></p>
+                </div>
+                <div class="knoppenrij" id="kopknoppen"></div>
+            </header>
+
+            <main class="stapel" id="inhoud">
+                <div id="fout" class="fout" role="alert" data-testid="fout" hidden></div>
+
+                <section id="lege-staat" class="leeg" data-testid="lege-staat" aria-labelledby="leeg-kop" hidden></section>
+
+                <div id="werk" class="stapel" hidden>
+                    <p class="publicatie" id="publicatie"></p>
+                    <div class="raster" id="kaarten"></div>
+                </div>
+            </main>
+        </div>
+
+        <input type="file" id="bestandskiezer" accept=".json,application/json" tabindex="-1" aria-hidden="true" hidden>
+        <p id="melding" class="melding" role="status" aria-live="polite"></p>
+    </section>
 </body>
 </html>
