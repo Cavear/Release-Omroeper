@@ -61,6 +61,22 @@ Dit bestand is de overdracht tussen de MCP-route (skill `/journaal`) en de webap
 | `goedgekeurd` | Nagekeken en goed bevonden door de redactie | ja |
 | `uitgesloten` | Komt bewust niet in het journaal | nee |
 
+### Statusovergangen in de redactie
+
+`wijzigStatus` in `public/logic.js` staat alleen deze overgangen toe (`OVERGANGEN`). Elke overgang hoort bij een knop op de kaart.
+
+| Knop | Van | Naar |
+|---|---|---|
+| *Goedkeuren* | `concept`, `meer-info-nodig` | `goedgekeurd` |
+| *Terug naar concept* | `goedgekeurd` | `concept` |
+| *Uitsluiten* | `concept`, `meer-info-nodig`, `goedgekeurd` | `uitgesloten` |
+| *Weer opnemen* | `uitgesloten` | `concept` |
+
+Afspraken voor de UI:
+- Op een **uitgesloten** kaart is *Goedkeuren* uitgeschakeld (`disabled`), met uitleg. Eerst *Weer opnemen*, dan pas goedkeuren.
+- `meer-info-nodig` komt alleen uit het conceptbestand. Na *Goedkeuren* of *Uitsluiten* gaat een bericht via *Terug naar concept* of *Weer opnemen* naar `concept`, niet terug naar `meer-info-nodig`. Dat is een bewuste keuze: de redactie heeft het bericht dan al bekeken.
+- Bewerken verandert de status niet: een goedgekeurd bericht blijft na het aanpassen van kop of uitleg goedgekeurd.
+
 ## Validatieregels bij import
 
 1. Het bestand is geldige JSON en niet leeg.

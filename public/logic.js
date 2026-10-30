@@ -223,3 +223,96 @@ export function valideerConcept(json) {
 
   return uitkomst();
 }
+
+/**
+ * Welke statusovergang hoort bij welke knop op de kaart.
+ * Goedkeuren: concept of meer-info-nodig → goedgekeurd. Terug naar concept: goedgekeurd → concept.
+ * Uitsluiten: elke status behalve uitgesloten → uitgesloten. Weer opnemen: uitgesloten → concept.
+ * Op een uitgesloten kaart is Goedkeuren dus uitgeschakeld; meer-info-nodig komt na een wijziging niet terug.
+ * Zie de tabel in docs/contract.md.
+ */
+export const OVERGANGEN = Object.freeze({
+  'concept': Object.freeze(['goedgekeurd', 'uitgesloten']),
+  'meer-info-nodig': Object.freeze(['goedgekeurd', 'uitgesloten']),
+  'goedgekeurd': Object.freeze(['concept', 'uitgesloten']),
+  'uitgesloten': Object.freeze(['concept']),
+});
+
+/**
+ * Een bericht uit het conceptbestand (zie docs/contract.md).
+ * @typedef {{ prNummer: number, bronUrl: string, origineleTitel: string, gemergdOp?: string, kop: string,
+ *   uitleg: string, voorWie?: string, status: string, publicatiestatus?: string }} Bericht
+ */
+
+/**
+ * Zoekt de plek van een bericht in de lijst.
+ * @param {Bericht[]} berichten
+ * @param {number} prNummer een getal; zet een waarde uit een data-attribuut eerst om met Number()
+ * @returns {number} de index van het bericht
+ * @throws {RangeError} als er geen bericht met dit PR-nummer is
+ */
+function zoekIndex(berichten, prNummer) {
+  const index = berichten.findIndex((b) => b.prNummer === prNummer);
+  if (index === -1) throw new RangeError(`Er is geen bericht met PR-nummer ${prNummer}.`);
+  return index;
+}
+
+/**
+ * Vervangt één bericht in een kopie van de lijst; de originele lijst blijft ongewijzigd.
+ * @param {Bericht[]} berichten
+ * @param {number} index
+ * @param {Partial<Bericht>} wijziging
+ * @returns {Bericht[]}
+ */
+function vervang(berichten, index, wijziging) {
+  return berichten.map((b, i) => (i === index ? { ...b, ...wijziging } : b));
+}
+
+/**
+ * Kiest de berichten voor de uitzending: alleen de goedgekeurde,
+ * in dezelfde volgorde als op de redactietafel (de volgorde van het concept).
+ * @param {Bericht[]} berichten
+ * @returns {Bericht[]} een nieuwe lijst; de originele lijst blijft ongewijzigd
+ */
+export function selecteerUitzending(berichten) {
+  return berichten.filter((b) => b.status === 'goedgekeurd');
+}
+
+/**
+ * Past de kop en/of de uitleg van één bericht aan. Andere velden, zoals de status, blijven zoals ze waren:
+ * een goedgekeurd bericht blijft na bewerken goedgekeurd. Spaties aan het begin en eind worden weggehaald.
+ * @param {Bericht[]} berichten
+ * @param {number} prNummer het bericht dat je bewerkt
+ * @param {{ kop?: string, uitleg?: string }} wijziging alleen de velden die veranderen
+ * @returns {Bericht[]} een nieuwe lijst met het bewerkte bericht
+ * @throws {RangeError} als het bericht niet bestaat, of als kop of uitleg leeg wordt
+ */
+export function bewerkBericht(berichten, prNummer, wijziging = {}) {
+  const index = zoekIndex(berichten, prNummer);
+  /** @type {Partial<Bericht>} */
+  const nieuw = {};
+  for (const veld of /** @type {const} */ (['kop', 'uitleg'])) {
+    if (wijziging[veld] === undefined) continue;
+    const waarde = typeof wijziging[veld] === 'string' ? wijziging[veld].trim() : '';
+    if (waarde === '') throw new RangeError(`De ${veld} van bericht #${prNummer} mag niet leeg zijn.`);
+    nieuw[veld] = waarde;
+  }
+  return vervang(berichten, index, nieuw);
+}
+
+/**
+ * Zet een bericht op een nieuwe status, als die overgang mag (zie OVERGANGEN).
+ * @param {Bericht[]} berichten
+ * @param {number} prNummer het bericht dat je wijzigt
+ * @param {string} nieuweStatus concept, goedgekeurd of uitgesloten
+ * @returns {Bericht[]} een nieuwe lijst met het gewijzigde bericht
+ * @throws {RangeError} als het bericht niet bestaat of de overgang niet mag
+ */
+export function wijzigStatus(berichten, prNummer, nieuweStatus) {
+  const index = zoekIndex(berichten, prNummer);
+  const huidig = berichten[index].status;
+  if (!(OVERGANGEN[huidig] ?? []).includes(nieuweStatus)) {
+    throw new RangeError(`Bericht #${prNummer} kan niet van ${huidig} naar ${nieuweStatus}.`);
+  }
+  return vervang(berichten, index, { status: nieuweStatus });
+}
