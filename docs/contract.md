@@ -2,6 +2,8 @@
 
 Dit bestand is de overdracht tussen de MCP-route (skill `/journaal`) en de webapp. De generator van de testdata en de import in de app gebruiken allebei dit contract. Verandert het formaat, pas dan eerst dit document aan.
 
+Het nagekeken journaal dat de app exporteert (*Journaal exporteren*, `journaal-nagekeken.json`) volgt hetzelfde contract. Je kunt het dus opnieuw importeren en verder werken.
+
 ## Formaat
 
 ```json
