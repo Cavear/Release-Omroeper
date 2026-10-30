@@ -9,7 +9,7 @@ export const algemeen = {
   merk: 'HET RELEASE-BIOSCOOPJOURNAAL',
   redactieKop: 'De redactietafel',
   publicatiestatus: 'Publicatiestatus: niet gecontroleerd',
-  publicatieUitleg: 'Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.',
+  publicatieUitleg: 'De kop en uitleg zijn nog niet gecontroleerd; loop elk bericht na tegen de bron voordat je het goedkeurt.',
   onbekendeTijd: '–',
   handleidingLink: 'Lees de gebruikershandleiding',
   handleidingUrl: 'handleiding.html',
@@ -18,11 +18,18 @@ export const algemeen = {
    * @param {{repository: string, datum: string, van: string, tot: string, gegenereerd: string}} m
    * @returns {string}
    */
-  metaregel: (m) => `${m.repository} · gemergd op ${m.datum} tussen ${m.van} en ${m.tot} · concept van ${m.gegenereerd}`
+  metaregel: (m) => `${m.repository} · gemergd op ${m.datum} tussen ${m.van} en ${m.tot} · concept van ${m.gegenereerd}`,
+  /**
+   * Metaregel bij een periode over meer dagen.
+   * @param {{repository: string, datum: string, totDatum: string, van: string, tot: string, gegenereerd: string}} m
+   * @returns {string}
+   */
+  metaregelPeriode: (m) => `${m.repository} · gemergd tussen ${m.datum} ${m.van} en ${m.totDatum} ${m.tot} · concept van ${m.gegenereerd}`
 };
 
 /** Tekst op knoppen. Dit zijn ook de toegankelijke namen waarop de UI-tests zoeken. */
 export const knoppen = {
+  githubOphalen: 'GitHub ophalen',
   importeren: 'Concept importeren',
   bezigMetInlezen: 'Bezig met inlezen…',
   exporteren: 'Journaal exporteren',
@@ -40,6 +47,8 @@ export const knoppen = {
   volgende: 'Volgende',
   aftellenOverslaan: 'Aftellen overslaan',
   uitzendingSluiten: 'Uitzending sluiten',
+  muziekUit: 'Muziek uit',
+  muziekAan: 'Muziek aan',
   kopieerOverzicht: 'Kopieer overzicht',
   gekopieerd: 'Gekopieerd',
   terugNaarRedactie: 'Terug naar de redactie',
@@ -91,10 +100,42 @@ export const leeg = {
   kop: 'Zo maak je een journaal',
   intro: 'Van gemergde pull requests naar een uitzending die iedereen begrijpt, in drie stappen.',
   stappen: [
-    { titel: 'Laat Claude het concept maken', tekst: 'Claude haalt via GitHub de gemergde PR’s op en schrijft journaal-concept.json.' },
+    { titel: 'Laat Claude het concept maken', tekst: 'Claude haalt via GitHub de gemergde PR’s op en schrijft journaal-concept.json. Of haal ze zelf op met GitHub ophalen.' },
     { titel: 'Importeer het concept', tekst: 'De app controleert het bestand en zegt precies wat er mis is als het niet klopt.' },
     { titel: 'Redigeer en zend uit', tekst: 'Pas koppen aan, keur goed of sluit uit, en start de uitzending.' }
   ]
+};
+
+/** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
+export const github = {
+  kop: 'Gemergde PR’s ophalen',
+  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. Bij meer dan vijf resultaten wordt niets ingeladen; verklein dan de periode. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
+  repositoryLabel: 'Repository (owner/repo)',
+  repositoryVoorbeeld: 'Cavear/vibe_webshop',
+  vanLabel: 'Gemergd vanaf',
+  totLabel: 'Gemergd tot en met',
+  ophalen: 'Pull requests ophalen',
+  bezig: 'Bezig met ophalen…',
+  annuleren: 'Annuleren',
+  ontbrekendeBeschrijving: 'De pull request heeft geen beschrijving. Open de bron en vul een zakelijke uitleg in.',
+  zieBron: '(Ingekort; zie de bron.)',
+  bron: 'de opgehaalde pull requests',
+  foutkaart: {
+    kop: 'De pull requests zijn niet ingeladen',
+    oplossing: 'Controleer de repository en de periode en kies opnieuw GitHub ophalen.'
+  },
+  /** @param {number} n @returns {string} */
+  opgehaald: (n) => `${n} ${n === 1 ? 'bericht opgehaald' : 'berichten opgehaald'} uit GitHub`,
+  fouten: {
+    repository: 'Vul de repository in als eigenaar/naam.',
+    periode: 'Kies een geldige periode; de begindatum mag niet na de einddatum liggen.',
+    teVeel: 'Meer dan vijf PR’s gevonden. Verklein de periode; er wordt niets ingeladen.',
+    netwerk: 'GitHub is niet bereikbaar. Controleer je verbinding en probeer opnieuw.',
+    'privé': 'Repository niet gevonden of niet openbaar. De browserkoppeling kan alleen publieke repositories ophalen.',
+    limiet: 'GitHub heeft te veel verzoeken ontvangen. Wacht even en probeer opnieuw.',
+    onvolledig: 'GitHub heeft geen volledige zoekresultaten teruggegeven. Probeer opnieuw of verklein de periode.',
+    api: 'GitHub gaf geen bruikbaar antwoord. Controleer repository en periode en probeer opnieuw.'
+  }
 };
 
 /** Korte meldingen na een actie (getoond in #melding). */
@@ -113,7 +154,9 @@ export const meldingen = {
   gekopieerd: 'Het totaaloverzicht staat op je klembord.',
   kopierenMislukt: 'Kopiëren lukte niet. Selecteer de tekst en kopieer hem zelf.',
   importGeannuleerd: 'Import geannuleerd; je huidige werk is onveranderd.',
-  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.'
+  exportGeannuleerd: 'Export geannuleerd; sla eerst je wijziging op.',
+  muziekUit: 'De muziek staat uit.',
+  muziekAan: 'De muziek staat aan.'
 };
 
 /** Bevestiging voordat een nieuwe import het huidige werk vervangt. */
@@ -158,6 +201,7 @@ export const help = {
   statussenKop: 'DE VIER STATUSSEN',
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
+    { naam: 'GitHub ophalen', uitleg: 'haal maximaal vijf gemergde PR’s op uit een publieke repository. De titel en beschrijving blijven ongekeurd tot je ze controleert.' },
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
     { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
     { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
@@ -168,13 +212,14 @@ export const help = {
     { naam: 'Journaal exporteren', uitleg: 'sla het nagekeken journaal op als bestand.' },
     { naam: 'Aftellen overslaan', uitleg: 'gaat in de uitzending meteen van de aftelleader naar de titelkaart.' },
     { naam: 'Uitzending sluiten', uitleg: 'brengt je terug naar de redactie (ook met Esc).' },
+    { naam: 'Muziek uit / Muziek aan', uitleg: 'zet de journaalmuziek in de uitzending uit of weer aan (sneltoets M).' },
     { naam: 'Kopieer overzicht', uitleg: 'zet op het eindscherm alle koppen, uitleg en links op je klembord.' },
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
   conceptKop: 'HET CONCEPTBESTAND',
-  conceptTekst: 'Claude maakt journaal-concept.json met de skill /journaal: per gemergde pull request een grappige kop, een zakelijke uitleg en een link naar de bron. De app controleert het bestand bij het importeren. Klopt er iets niet, dan zie je per bericht en veld wat er mis is en wordt er niets geladen.',
+  conceptTekst: 'Je kunt zelf een conceptbestand importeren of maximaal vijf gemergde PR’s uit een publieke GitHub-repository ophalen. De directe koppeling neemt de PR-titel en de eerste alinea van de beschrijving over en maakt geen samenvatting; zonder beschrijving krijgt een bericht meer informatie nodig. Controleer de bron voordat je een bericht goedkeurt.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
-  publicatieTekst: 'Claude schreef de koppen en uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat dit onder elk bericht, ook in de uitzending.',
+  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen neemt de app de titel en de eerste alinea van de beschrijving over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
   handleiding: 'Naar de gebruikershandleiding',
   sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };

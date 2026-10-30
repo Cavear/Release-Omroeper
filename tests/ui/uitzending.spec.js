@@ -92,6 +92,24 @@ test.describe('redactie en uitzending', () => {
     await expect(page.getByTestId('uitzending').getByRole('heading', { level: 1 })).toHaveText(/uit de werkplaats/i, { timeout: 6000 });
   });
 
+  test('de muziekknop zet de muziek uit en aan, ook met M, en onthoudt de keuze', async ({ page }) => {
+    await redigeer(page);
+    await startTotTitelkaart(page);
+    const uitzending = page.getByTestId('uitzending');
+    await uitzending.getByRole('button', { name: 'Muziek uit' }).click();
+    await expect(uitzending.getByRole('button', { name: 'Muziek aan' })).toBeVisible();
+    await expect(page.locator('#melding')).toHaveText('De muziek staat uit.');
+    await page.keyboard.press('m');
+    await expect(uitzending.getByRole('button', { name: 'Muziek uit' })).toBeVisible();
+    await expect(page.locator('#melding')).toHaveText('De muziek staat aan.');
+
+    // Uit blijft uit bij de volgende uitzending.
+    await page.keyboard.press('m');
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Start uitzending' }).click();
+    await expect(uitzending.getByRole('button', { name: 'Muziek aan' })).toBeVisible();
+  });
+
   test('Start uitzending staat uit zolang er niets is goedgekeurd', async ({ page }) => {
     await importeer(page, 'geldig-5-berichten.json');
     await expect(page.getByRole('button', { name: 'Start uitzending' })).toBeDisabled();

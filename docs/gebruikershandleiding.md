@@ -4,9 +4,11 @@ Met de Release-omroeper maak je van de gemergde pull requests van een release ee
 
 Dezelfde tekst staat in de app zelf: `public/handleiding.html`, bereikbaar via *Lees de gebruikershandleiding* en via het Help-paneel. Pas bij een wijziging beide aan.
 
-## 1. Het concept laten maken
+## 1. PR’s ophalen of een concept laten maken
 
-Vraag Claude Code om `/journaal` voor een repository en een periode. Claude leest de gemergde PR's (alleen lezen) en schrijft `journaal-concept.json`: per PR een licht grappige kop, een zakelijke uitleg, voor wie het belangrijk is en een link naar de PR. Maximaal vijf berichten.
+Klik in de redactietafel op *GitHub ophalen*, vul een openbare repository in als `eigenaar/naam` en kies de periode waarin PR’s zijn gemergd (hele dagen, Nederlandse tijd). De app haalt maximaal vijf gemergde PR’s op. Zijn er meer dan vijf, dan wordt niets ingeladen en moet je de periode verkleinen. De PR-titel wordt de voorlopige kop (ingekort tot 90 tekens) en de eerste alinea van de beschrijving de uitleg, zonder sjablooncommentaar en checklists. Er komt niets bij. Een PR zonder beschrijving of met een ingekorte kop krijgt *meer informatie nodig*, de rest *concept*. Er is geen GitHub-token nodig. Privé-repositories zijn niet rechtstreeks vanuit de browser op te halen.
+
+Wil je licht komische koppen en zakelijke samenvattingen, vraag Claude Code dan om `/journaal` voor een repository en periode. Claude leest de gemergde PR's (alleen lezen) en schrijft `journaal-concept.json`. Dat bestand kun je met *Concept importeren* inladen. De directe GitHub-import maakt geen samenvattingen en schrijft niets terug naar GitHub.
 
 ## 2. Het concept importeren
 
@@ -75,7 +77,7 @@ Kies *Start uitzending* (kan pas als er minstens één bericht is goedgekeurd). 
 |---|---|
 | ![Een bericht in de uitzending](../testbewijs/stap-5.3/07-uitzending-bericht-1-desktop.jpg) | ![Het eindscherm met het totaaloverzicht en Kopieer overzicht](../testbewijs/stap-5.3/09-uitzending-eindscherm-desktop.jpg) |
 
-*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; zonder HTTPS gebruikt de app een oudere kopieermethode, en lukt ook dat niet, dan selecteert de app de tekst zodat je hem zelf kopieert.
+*Volgende* met de knop, het pijltje rechts of door naar links te vegen. Esc of *Uitzending sluiten* brengt je terug naar de redactie. Tijdens de uitzending speelt zachte journaalmuziek; *Muziek uit* (of de toets M) zet hem uit, en die keuze blijft gelden tot je de pagina ververst. Op het eindscherm kopieert *Kopieer overzicht* de koppen, uitleg en links; zonder HTTPS gebruikt de app een oudere kopieermethode, en lukt ook dat niet, dan selecteert de app de tekst zodat je hem zelf kopieert.
 
 ## 5. Het journaal exporteren
 
