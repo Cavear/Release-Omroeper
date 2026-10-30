@@ -14,7 +14,7 @@ import {
   valideerConcept, wijzigStatus, bewerkBericht, exporteerJournaal, selecteerUitzending, maakTotaaloverzicht, PUBLICATIESTATUS,
 } from './logic.js';
 import { kanMuziek, startMuziek, stopMuziek, zetMuziek, muziekStaatAan, dempMuziek } from './muziek.js';
-import { kanVoorlezen, spreek, stopVoorlezen, leesTijd } from './voorlezer.js';
+import { kanVoorlezen, spreek, stopVoorlezen, ontgrendelSpraak } from './voorlezer.js';
 import {
   algemeen, knoppen, statussen, kaart, teller, leeg, meldingen, fouten, bevestigVervangen, uitzending, help, voorlezen,
   github as githubTeksten,
@@ -30,15 +30,15 @@ const tijdOpmaak = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '
 const datumOpmaak = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: TIJDZONE });
 const datumLang = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'long', year: 'numeric', timeZone: TIJDZONE });
 
-/** Eerste en laatste stap van de uitzending vÃ³Ã³r de nieuwsframes. */
+/** Eerste en laatste stap van de uitzending vóór de nieuwsframes. */
 const LEADER = -2;
 const TITELKAART = -1;
-/** Duur van Ã©Ã©n cijfer van de aftelleader in ms (token --duur-leader). */
+/** Duur van één cijfer van de aftelleader in ms (token --duur-leader). */
 const LEADER_TIK = 1000;
 
 /**
  * De toestand van de redactie. `bewerkt` is het PR-nummer van de kaart in de bewerkstand, of null.
- * `gewijzigd` is waar als er redactiewerk is dat nog niet is geÃ«xporteerd.
+ * `gewijzigd` is waar als er redactiewerk is dat nog niet is geëxporteerd.
  * @type {{ concept: null | { repository: string, periode: { van: string, tot: string }, gegenereerdOp?: string }, berichten: import('./logic.js').Bericht[], bewerkt: number | null, gewijzigd: boolean }}
  */
 const staat = { concept: null, berichten: [], bewerkt: null, gewijzigd: false };
@@ -73,8 +73,8 @@ const el = {
  */
 const uz = { berichten: [], stap: LEADER, teller: 3, klok: null };
 
-/** Stilte na het voorlezen van een scherm, voordat de film doorgaat (ms). */
-const PAUZE_NA_SCENE = 1500;
+/** Hoe lang elk scherm van de film in beeld staat (ms); praat de omroeper dan nog, dan wacht de film op hem. */
+const SCENE_DUUR = 10000;
 
 /**
  * De regie van de film. `speelt` is onwaar na Pauzeren; `beurt` telt op bij elk nieuw scherm, zodat een oude
@@ -204,7 +204,7 @@ function bouwVasteDelen() {
 
 /**
  * Formatteert een lokale datum voor een date-input.
- * @param {number} [dagenTerug] Aantal dagen vÃ³Ã³r vandaag
+ * @param {number} [dagenTerug] Aantal dagen vóór vandaag
  * @returns {string} Datum als JJJJ-MM-DD
  */
 function lokaleDatum(dagenTerug = 0) {
@@ -213,7 +213,7 @@ function lokaleDatum(dagenTerug = 0) {
   return `${datum.getFullYear()}-${String(datum.getMonth() + 1).padStart(2, '0')}-${String(datum.getDate()).padStart(2, '0')}`;
 }
 
-/** Bouwt het formulier voor het ophalen van PRâ€™s uit een publieke GitHub-repository. */
+/** Bouwt het formulier voor het ophalen van PR’s uit een publieke GitHub-repository. */
 function bouwGitHubDialoog() {
   const repository = maak('input', {
     id: 'github-repository', type: 'text', required: true, autocomplete: 'off',
@@ -267,7 +267,7 @@ function zetGitHubknop(knop, bezig) {
 }
 
 /**
- * Haalt PRâ€™s op, valideert het concept en laat bestaand redactiewerk intact bij een fout.
+ * Haalt PR’s op, valideert het concept en laat bestaand redactiewerk intact bij een fout.
  * Fouten van GitHub blijven in de dialoog staan; daarna sluit de dialoog, zodat een
  * validatiefout (#fout) of melding (#melding) zichtbaar is.
  * @param {string} repository owner/repo
@@ -395,7 +395,7 @@ function maakBewerkformulier(b) {
 }
 
 /**
- * Maakt de kaart van Ã©Ã©n bericht, in de gewone stand of in de bewerkstand.
+ * Maakt de kaart van één bericht, in de gewone stand of in de bewerkstand.
  * @param {import('./logic.js').Bericht} b
  * @returns {HTMLElement}
  */
@@ -474,7 +474,7 @@ function leesBewerkstand() {
 }
 
 /**
- * Zet een kaart in of uit de bewerkstand. Er is altijd hoogstens Ã©Ã©n kaart in de bewerkstand.
+ * Zet een kaart in of uit de bewerkstand. Er is altijd hoogstens één kaart in de bewerkstand.
  * Wie naar een andere kaart wisselt terwijl er nog niet-opgeslagen tekst staat, krijgt eerst een vraag.
  * @param {number | null} pr
  */
@@ -530,7 +530,7 @@ function exporteer() {
   meld(meldingen.geexporteerd);
 }
 
-// Wie het tabblad sluit of ververst met werk dat nog niet is geÃ«xporteerd, krijgt eerst de vraag van de browser.
+// Wie het tabblad sluit of ververst met werk dat nog niet is geëxporteerd, krijgt eerst de vraag van de browser.
 window.addEventListener('beforeunload', (event) => {
   if (!staat.gewijzigd && !leesBewerkstand()?.gewijzigd) return;
   event.preventDefault();
@@ -648,7 +648,9 @@ function bouwUitzending() {
     toonGeluidknop();
     bediening.prepend(el.geluidknop);
   }
-  el.uitzending.prepend(bediening);
+  // Zonder Nederlandse stem loopt de film stil door; dat moet je wel kunnen zien.
+  el.geenStem = maak('p', { class: 'uitzending__geen-stem', 'data-testid': 'geen-stem', hidden: true }, uitzending.geenStem);
+  el.uitzending.prepend(bediening, el.geenStem);
 
   el.balkLoop = maak('div', { class: 'balk__loop', 'aria-hidden': 'true' });
   el.pauzeknop = maak('button', { type: 'button', class: 'knop balk__volgende balk__pauze', 'aria-keyshortcuts': 'P' });
@@ -716,8 +718,10 @@ function startUitzending() {
   // Elke uitzending begint spelend.
   regie.speelt = true;
   toonPauzeknop();
-  // Start uitzending is een klik, dus hier mag de browser geluid afspelen.
+  // Start uitzending is een klik, dus hier mag de browser geluid afspelen en de spraak ontgrendelen.
   startMuziek();
+  ontgrendelSpraak();
+  el.geenStem.hidden = true;
   toonUitzending();
 }
 
@@ -727,7 +731,7 @@ function wisselGeluid() {
   zetMuziek(aan);
   toonGeluidknop();
   meld(aan ? meldingen.geluidAan : meldingen.geluidUit);
-  // Het huidige scherm begint opnieuw: met stem als het geluid aan gaat, op leestijd als het uit gaat.
+  // Het huidige scherm begint opnieuw: met stem als het geluid aan gaat, zonder als het uit gaat.
   if (regie.speelt) speelScene();
 }
 
@@ -773,10 +777,10 @@ function zetOmroeper(praat) {
 /**
  * Wacht een tijd binnen de huidige beurt van de regie; stopRegie breekt het wachten af.
  * @param {number} ms
- * @returns {Promise<void>} lost alleen op als de beurt intussen niet voorbij is
+ * @returns {Promise<boolean>} lost alleen op als de beurt intussen niet voorbij is
  */
 function wachtInBeurt(ms) {
-  return new Promise((klaar) => { regie.klok = setTimeout(klaar, ms); });
+  return new Promise((klaar) => { regie.klok = setTimeout(() => klaar(true), ms); });
 }
 
 /**
@@ -792,29 +796,32 @@ function voorleestekst() {
 }
 
 /**
- * Speelt het huidige scherm af als een scÃ¨ne uit de film: de omroeper leest voor (of, zonder stem of geluid,
- * wacht de film de leestijd af), daarna een korte stilte en dan het volgende scherm. Na het eindscherm stopt de muziek.
+ * Speelt het huidige scherm af als een scène uit de film: het staat SCENE_DUUR (10 s) in beeld terwijl de omroeper
+ * voorleest, en dan volgt het volgende scherm. Praat de omroeper na 10 s nog, dan wacht de film tot hij klaar is.
+ * Op het eindscherm leest hij het slotwoord en stopt daarna de muziek; dat scherm blijft staan om te kopiëren.
  */
 async function speelScene() {
   stopRegie();
   if (!regie.speelt || uz.stap === LEADER || el.uitzending.hidden) return;
   const beurt = regie.beurt;
-  const zinnen = voorleestekst();
   const eind = uz.stap >= uz.berichten.length;
+  const minimaal = eind ? Promise.resolve(true) : wachtInBeurt(SCENE_DUUR);
 
-  if (muziekStaatAan() && kanVoorlezen()) {
-    const klaar = await spreek(zinnen, { bijStart: () => zetOmroeper(true) });
-    if (!klaar || beurt !== regie.beurt) return;
-    zetOmroeper(false);
-  } else {
-    await wachtInBeurt(leesTijd(zinnen.join(' ')));
-    if (beurt !== regie.beurt) return;
+  const metStem = muziekStaatAan() && kanVoorlezen();
+  // Wel geluid maar geen Nederlandse stem: laat zien waarom het stil blijft.
+  el.geenStem.hidden = metStem || !muziekStaatAan();
+  let gesproken = Promise.resolve(true);
+  if (metStem) {
+    gesproken = spreek(voorleestekst(), { bijStart: () => zetOmroeper(true) }).then((klaar) => {
+      if (beurt === regie.beurt) zetOmroeper(false);
+      return klaar;
+    });
   }
 
-  // Na het slotwoord is de film af; het eindscherm blijft staan om te kopiÃ«ren.
-  if (eind) { stopMuziek(); return; }
-  await wachtInBeurt(PAUZE_NA_SCENE);
-  if (beurt === regie.beurt) volgende();
+  const [klaar] = await Promise.all([gesproken, minimaal]);
+  if (!klaar || beurt !== regie.beurt) return;
+  if (eind) stopMuziek();
+  else volgende();
 }
 
 /** Sluit de uitzending en zet de focus terug op Start uitzending. */
@@ -895,7 +902,7 @@ function maakTitelkaart() {
 }
 
 /**
- * Maakt het nieuwsframe van Ã©Ã©n bericht: onderschrift, kop, uitleg en bron met publicatiestatus.
+ * Maakt het nieuwsframe van één bericht: onderschrift, kop, uitleg en bron met publicatiestatus.
  * @param {import('./logic.js').Bericht} b
  * @param {number} i volgnummer vanaf 1
  * @param {number} n aantal berichten
@@ -934,7 +941,7 @@ function maakEindscherm() {
       kopieer.replaceChildren(icoon('kopieer'), knoppen.gekopieerd);
       status.textContent = meldingen.gekopieerd;
     } else {
-      // Zonder klembord: selecteer het overzicht, zodat de gebruiker het zelf kan kopiÃ«ren.
+      // Zonder klembord: selecteer het overzicht, zodat de gebruiker het zelf kan kopiëren.
       window.getSelection().selectAllChildren(overzicht);
       status.textContent = meldingen.kopierenMislukt;
     }
@@ -947,7 +954,7 @@ function maakEindscherm() {
 /**
  * Zet tekst op het klembord. Zonder HTTPS werkt de Clipboard API niet; dan via de oudere kopieermethode.
  * @param {string} tekst
- * @returns {Promise<boolean>} true als het kopiÃ«ren lukte
+ * @returns {Promise<boolean>} true als het kopiëren lukte
  */
 async function kopieerTekst(tekst) {
   try {

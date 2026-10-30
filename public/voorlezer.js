@@ -102,6 +102,17 @@ export async function spreek(zinnen, { bijStart } = {}) {
   return beurt === voorlezer.beurt;
 }
 
+/**
+ * Ontgrendelt de spraak met een stille, lege zin. Roep dit aan in een klik (Start uitzending): Safari en mobiele
+ * browsers laten spraak alleen toe na een handeling van de gebruiker, en Chrome start de eerste zin daarna sneller.
+ */
+export function ontgrendelSpraak() {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  const stil = new SpeechSynthesisUtterance('');
+  stil.volume = 0;
+  window.speechSynthesis.speak(stil);
+}
+
 /** Breekt het voorlezen direct af. */
 export function stopVoorlezen() {
   voorlezer.beurt += 1;
