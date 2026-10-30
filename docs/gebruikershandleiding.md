@@ -4,9 +4,11 @@ Met de Release-omroeper maak je van de gemergde pull requests van een release ee
 
 Dezelfde tekst staat in de app zelf: `public/handleiding.html`, bereikbaar via *Lees de gebruikershandleiding* en via het Help-paneel. Pas bij een wijziging beide aan.
 
-## 1. Het concept laten maken
+## 1. PR’s ophalen of een concept laten maken
 
-Vraag Claude Code om `/journaal` voor een repository en een periode. Claude leest de gemergde PR's (alleen lezen) en schrijft `journaal-concept.json`: per PR een licht grappige kop, een zakelijke uitleg, voor wie het belangrijk is en een link naar de PR. Maximaal vijf berichten.
+Klik in de redactietafel op *GitHub ophalen*, vul een openbare repository in als `eigenaar/naam` en kies de periode waarin PR’s zijn gemergd. De app haalt maximaal vijf gemergde PR’s op. De originele PR-titel en beschrijving worden overgenomen; alle berichten blijven op *concept*. Er is geen GitHub-token nodig. Privé-repositories zijn niet rechtstreeks vanuit de browser op te halen.
+
+Wil je licht komische koppen en zakelijke samenvattingen, vraag Claude Code dan om `/journaal` voor een repository en periode. Claude leest de gemergde PR's (alleen lezen) en schrijft `journaal-concept.json`. Dat bestand kun je met *Concept importeren* inladen. De directe GitHub-import maakt geen samenvattingen en schrijft niets terug naar GitHub.
 
 ## 2. Het concept importeren
 

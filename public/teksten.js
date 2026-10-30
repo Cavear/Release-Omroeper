@@ -9,7 +9,7 @@ export const algemeen = {
   merk: 'HET RELEASE-BIOSCOOPJOURNAAL',
   redactieKop: 'De redactietafel',
   publicatiestatus: 'Publicatiestatus: niet gecontroleerd',
-  publicatieUitleg: 'Claude schreef deze koppen en uitleg; loop elk bericht na tegen de bron voordat je het goedkeurt.',
+  publicatieUitleg: 'De kop en uitleg zijn nog niet gecontroleerd; loop elk bericht na tegen de bron voordat je het goedkeurt.',
   onbekendeTijd: '–',
   handleidingLink: 'Lees de gebruikershandleiding',
   handleidingUrl: 'handleiding.html',
@@ -23,6 +23,7 @@ export const algemeen = {
 
 /** Tekst op knoppen. Dit zijn ook de toegankelijke namen waarop de UI-tests zoeken. */
 export const knoppen = {
+  githubOphalen: 'GitHub ophalen',
   importeren: 'Concept importeren',
   bezigMetInlezen: 'Bezig met inlezen…',
   exporteren: 'Journaal exporteren',
@@ -93,8 +94,33 @@ export const leeg = {
   stappen: [
     { titel: 'Laat Claude het concept maken', tekst: 'Claude haalt via GitHub de gemergde PR’s op en schrijft journaal-concept.json.' },
     { titel: 'Importeer het concept', tekst: 'De app controleert het bestand en zegt precies wat er mis is als het niet klopt.' },
-    { titel: 'Redigeer en zend uit', tekst: 'Pas koppen aan, keur goed of sluit uit, en start de uitzending.' }
+    { titel: 'Redigeer en zend uit', tekst: 'Sluit berichten uit die niet passen en start daarna de uitzending.' }
   ]
+};
+
+/** GitHub ophalen: gebruikt alleen publieke API-gegevens en vraagt nooit om een token. */
+export const github = {
+  kop: 'Gemergde PR’s ophalen',
+  intro: 'Haal maximaal vijf gemergde pull requests op uit een publieke repository. De PR-titel en beschrijving worden als ongekeurd concept gebruikt; controleer en redigeer ze voordat je goedkeurt.',
+  repositoryLabel: 'Repository (owner/repo)',
+  repositoryVoorbeeld: 'Cavear/vibe_webshop',
+  vanLabel: 'Gemergd vanaf',
+  totLabel: 'Gemergd tot en met',
+  ophalen: 'Pull requests ophalen',
+  bezig: 'Bezig met ophalen…',
+  annuleren: 'Annuleren',
+  ontbrekendeBeschrijving: 'De pull request heeft geen beschrijving. Open de bron en vul een zakelijke uitleg in.',
+  /** @param {number} n @returns {string} */
+  opgehaald: (n) => `${n} ${n === 1 ? 'bericht opgehaald' : 'berichten opgehaald'} uit GitHub`,
+  fouten: {
+    repository: 'Vul de repository in als eigenaar/naam.',
+    periode: 'Kies een geldige periode; de begindatum mag niet na de einddatum liggen.',
+    teVeel: 'Meer dan vijf PR’s gevonden. Verklein de periode; er wordt niets ingeladen.',
+    netwerk: 'GitHub is niet bereikbaar. Controleer je verbinding en probeer opnieuw.',
+    'privé': 'Repository niet gevonden of niet openbaar. De browserkoppeling kan alleen publieke repositories ophalen.',
+    limiet: 'GitHub heeft te veel verzoeken ontvangen. Wacht even en probeer opnieuw.',
+    api: 'GitHub gaf geen bruikbaar antwoord. Controleer repository en periode en probeer opnieuw.'
+  }
 };
 
 /** Korte meldingen na een actie (getoond in #melding). */
@@ -158,6 +184,7 @@ export const help = {
   statussenKop: 'DE VIER STATUSSEN',
   knoppenKop: 'DE KNOPPEN',
   knoppen: [
+    { naam: 'GitHub ophalen', uitleg: 'haal maximaal vijf gemergde PR’s op uit een publieke repository. De titel en beschrijving blijven ongekeurd tot je ze controleert.' },
     { naam: 'Concept importeren', uitleg: 'laad journaal-concept.json. Een nieuw bestand vervangt je huidige werk pas na bevestiging.' },
     { naam: 'Help', uitleg: 'opent deze uitleg (sneltoets ?).' },
     { naam: 'Goedkeuren / Terug naar concept', uitleg: 'zet een bericht in of uit de uitzending.' },
@@ -172,9 +199,9 @@ export const help = {
     { naam: 'Terug naar de redactie', uitleg: 'sluit het eindscherm en brengt je terug naar de kaarten.' }
   ],
   conceptKop: 'HET CONCEPTBESTAND',
-  conceptTekst: 'Claude maakt journaal-concept.json met de skill /journaal: per gemergde pull request een grappige kop, een zakelijke uitleg en een link naar de bron. De app controleert het bestand bij het importeren. Klopt er iets niet, dan zie je per bericht en veld wat er mis is en wordt er niets geladen.',
+  conceptTekst: 'Je kunt zelf een conceptbestand importeren of maximaal vijf gemergde PR’s uit een publieke GitHub-repository ophalen. De directe koppeling neemt de PR-titel en beschrijving over, maakt geen samenvatting en zet alles op concept. Controleer de bron voordat je een bericht goedkeurt.',
   publicatieKop: 'Publicatiestatus: niet gecontroleerd',
-  publicatieTekst: 'Claude schreef de koppen en uitleg op basis van de PR’s. Dat kan fout zijn. Daarom staat dit onder elk bericht, ook in de uitzending.',
+  publicatieTekst: 'De koppen en uitleg zijn nog niet gecontroleerd. Bij direct ophalen neemt de app de titel en beschrijving letterlijk over; die kunnen onvolledig zijn. Daarom blijft controle door de redactie nodig.',
   handleiding: 'Naar de gebruikershandleiding',
   sneltoets: 'Sneltoets: ? opent deze uitleg, Esc sluit hem.'
 };
