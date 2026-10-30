@@ -366,3 +366,9 @@ button, input, textarea { font: inherit; color: inherit; }
 .veld__fout { font-weight: 600; color: var(--error-ink); }
 /* Horizontaal vegen is in de uitzending Volgende; de browser mag dat gebaar niet zelf afhandelen. */
 .uitzending { touch-action: pan-y; }
+/* Actierij van een kaart in twee regels (statusknoppen, dan Bewerken en Bron openen), zoals in het ontwerp. */
+.kaart__acties > .knoppenrij + .knoppenrij { margin-top: var(--space-2); }
+/* Op mobiel staat de tellerbalk vast onderin; de melding komt erboven in plaats van eroverheen. */
+@media (max-width: 767.98px) {
+  .melding { bottom: calc(var(--space-16) * 3); }
+}
