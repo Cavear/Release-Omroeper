@@ -40,6 +40,6 @@ Webapp (public/): redactie → uitzending
 
 ## Hosting en CI
 
-- **Hosting:** STRATO. De inhoud van `public/` gaat handmatig met FileZilla naar de map `app1-test` (`http://app1-test.caitlinveenendaal.nl/`).
-- **CI** (`.github/workflows/ci-cd.yml`): de job `test` (lint en unit-tests) draait bij elke pull request naar `test` of `main`. De job `smoke` start je met *Run workflow* na een upload.
-- Er is geen automatische deploy; zie [plan-aanpassingen.md](plan-aanpassingen.md).
+- **Hosting:** STRATO. Bij een push naar `test` zet de job `deploy-test` de inhoud van `public/` via SFTP in de map `app1-test` (`http://app1-test.caitlinveenendaal.nl/`); daarna draait de smoketest.
+- **CI** (`.github/workflows/ci-cd.yml`): de job `test` (lint en unit-tests) draait bij elke pull request naar `test` of `main` en bij een push naar `test`; daarna `deploy-test` en `smoke`. De smoketest kan ook los met *Run workflow*.
+- Prod gaat voorlopig nog met de hand; zie [plan-aanpassingen.md](plan-aanpassingen.md).

@@ -62,7 +62,7 @@ Screenshots en rapporten van de kwaliteitscheck (`/kwaliteitscheck`) staan in `t
 
 ## Smoketest na een upload
 
-De app gaat handmatig met FileZilla naar STRATO (map `app1-test`). Controleer daarna of de pagina laadt:
+Bij een push naar `test` zet de CI de app op STRATO (map `app1-test`) en draait daarna vanzelf de smoketest. Los draaien kan ook:
 
 - **Lokaal:** `npm run test:smoke` (standaard `http://app1-test.caitlinveenendaal.nl/`), of met een andere URL: `BASE_URL=<url> npm run test:smoke`.
 - **In GitHub:** Actions → *ci-cd* → *Run workflow*, eventueel met een andere URL.
