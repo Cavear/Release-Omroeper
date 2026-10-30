@@ -343,7 +343,6 @@ button, input, textarea { font: inherit; color: inherit; }
 .effect-korrel { inset: 0; z-index: 3; width: 100%; height: 100%; opacity: .16; mix-blend-mode: screen; }
 .effect-flikker { inset: 0; z-index: 3; background: #f2ead8; opacity: .05; }
 .effect-kras { top: 0; bottom: 0; z-index: 3; width: 1px; background: var(--sepia); opacity: .35; }
-.effect-kras:nth-of-type(2) { opacity: .2; }
 
 /* ============ 7. Beweging (alleen als de gebruiker dat toelaat) ============ */
 @media (prefers-reduced-motion: no-preference) {
@@ -372,3 +371,14 @@ button, input, textarea { font: inherit; color: inherit; }
 @media (max-width: 767.98px) {
   .melding { bottom: calc(var(--space-16) * 3); }
 }
+/* Plaats van de twee krassen in de uitzending (zoals het ontwerp), en de tweede iets lichter. */
+.effect-kras--links { left: 23%; }
+.effect-kras--rechts { left: 71%; opacity: .2; }
+/* Knoppen en links in de uitzending liggen boven vignet en korrel, zodat hun contrast niet onder AA zakt. */
+.leader__overslaan { z-index: 5; }
+.uitzending__frame a, .eindscherm .knop { position: relative; z-index: 5; }
+/* Lange bronlinks in het totaaloverzicht breken af in plaats van buiten het vak te lopen. */
+.overzicht a { overflow-wrap: anywhere; }
+/* Eindscherm: ruimte boven voor de sluitknop, en bij weinig hoogte (telefoon liggend) bovenaan beginnen
+   in plaats van de kop boven het beeld weg te centreren. */
+.eindscherm { justify-content: safe center; padding-top: calc(var(--tikdoel-min) + var(--space-6)); }

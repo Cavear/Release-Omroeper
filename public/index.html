@@ -43,6 +43,19 @@
     <section id="uitzending" class="uitzending" data-thema="uitzending" data-testid="uitzending" hidden>
         <div class="uitzending__frame" id="uitzending-frame"></div>
         <div class="balk" id="balk"></div>
+        <!-- Effectlagen van het bioscoopjournaal: alleen decor, niet klikbaar en verborgen voor schermlezers.
+             Flikkering en krassen bewegen alleen zonder prefers-reduced-motion (zie style.css). -->
+        <div class="effect-vignet" aria-hidden="true"></div>
+        <svg class="effect-korrel" aria-hidden="true" focusable="false">
+            <filter id="korrel">
+                <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+                <feColorMatrix values="0 0 0 0 0.63  0 0 0 0 0.53  0 0 0 0 0.38  0 0 0 1 0"/>
+            </filter>
+            <rect width="100%" height="100%" filter="url(#korrel)"/>
+        </svg>
+        <div class="effect-flikker" aria-hidden="true"></div>
+        <div class="effect-kras effect-kras--links" aria-hidden="true"></div>
+        <div class="effect-kras effect-kras--rechts" aria-hidden="true"></div>
     </section>
 
     <!-- Buiten beide schermen, zodat meldingen ook tijdens de uitzending worden voorgelezen. -->
